@@ -1,13 +1,42 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-body {
-  @apply bg-sda-gray text-sda-blue font-sans;
+:root {
+  --color-sda-blue: #003087;
+  --color-sda-white: #FFFFFF;
+  --color-sda-gray: #f8fafc;
 }
 
-@layer components {
-  .btn {
-    @apply px-4 py-2 rounded-lg transition-all duration-200 hover:shadow-md;
-  }
+@theme {
+  --color-sda-blue: #003087;
+  --color-sda-white: #FFFFFF;
+  --color-sda-gray: #f8fafc;
+}
+
+body {
+  background-color: var(--color-sda-gray);
+  color: var(--color-sda-blue);
+  font-family: var(--font-inter), sans-serif;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #003087;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #002366;
 }
