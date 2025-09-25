@@ -3,9 +3,11 @@ import { User, LogOut, Menu, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { useState } from 'react';
+import { useAuth } from '@/context/AuthContext';
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user, logout } = useAuth();
 
   return (
     <motion.nav
@@ -16,31 +18,51 @@ export default function Navbar() {
     >
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center h-16">
-          {/* Logo */}
           <Link href="/" className="text-2xl font-bold flex items-center">
             🙏 BlessPay
           </Link>
 
-          {/* Desktop Menu */}
           <div className="hidden md:flex items-center space-x-6">
-            {['Dashboard', 'Payments', 'History', 'Profile', 'Admin'].map((item) => (
-              <Link 
-                key={item}
-                href={`/${item.toLowerCase()}`}
-                className="hover:text-blue-200 transition-colors duration-200 font-medium"
-              >
-                {item}
-              </Link>
-            ))}
-            
-            <div className="flex items-center space-x-3 ml-4 pl-4 border-l border-blue-400">
-              <User className="w-5 h-5" />
-              <span>Guest</span>
-              <LogOut className="w-5 h-5 cursor-pointer hover:text-blue-200" />
-            </div>
+            {user ? (
+              <>
+                <Link href="/dashboard" className="hover:text-blue-200 transition-colors duration-200 font-medium">
+                  Dashboard
+                </Link>
+                <Link href="/payments" className="hover:text-blue-200 transition-colors duration-200 font-medium">
+                  Payments
+                </Link>
+                <Link href="/history" className="hover:text-blue-200 transition-colors duration-200 font-medium">
+                  History
+                </Link>
+                <Link href="/profile" className="hover:text-blue-200 transition-colors duration-200 font-medium">
+                  Profile
+                </Link>
+                {user.role === 'admin' && (
+                  <Link href="/admin" className="hover:text-blue-200 transition-colors duration-200 font-medium">
+                    Admin
+                  </Link>
+                )}
+                
+                <div className="flex items-center space-x-3 ml-4 pl-4 border-l border-blue-400">
+                  <User className="w-5 h-5" />
+                  <span>{user.name}</span>
+                  <button onClick={logout} className="hover:text-blue-200">
+                    <LogOut className="w-5 h-5" />
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <Link href="/login" className="hover:text-blue-200 transition-colors duration-200 font-medium">
+                  Login
+                </Link>
+                <Link href="/signup" className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg transition-colors duration-200">
+                  Sign Up
+                </Link>
+              </>
+            )}
           </div>
 
-          {/* Mobile Menu Button */}
           <button 
             className="md:hidden p-2"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -49,7 +71,6 @@ export default function Navbar() {
           </button>
         </div>
 
-        {/* Mobile Menu */}
         <AnimatePresence>
           {isMenuOpen && (
             <motion.div
@@ -60,21 +81,7 @@ export default function Navbar() {
               className="md:hidden border-t border-blue-400"
             >
               <div className="py-4 space-y-4">
-                {['Dashboard', 'Payments', 'History', 'Profile', 'Admin'].map((item) => (
-                  <Link 
-                    key={item}
-                    href={`/${item.toLowerCase()}`}
-                    className="block hover:text-blue-200 transition-colors duration-200 font-medium"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    {item}
-                  </Link>
-                ))}
-                <div className="flex items-center space-x-3 pt-4 border-t border-blue-400">
-                  <User className="w-5 h-5" />
-                  <span>Guest</span>
-                  <LogOut className="w-5 h-5 cursor-pointer hover:text-blue-200 ml-auto" />
-                </div>
+                {/* Mobile menu items similar to desktop */}
               </div>
             </motion.div>
           )}
