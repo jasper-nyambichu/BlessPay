@@ -1,26 +1,16 @@
 'use client';
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { CognitoUser, AuthenticationDetails, CognitoUserPool, CognitoUserAttribute } from 'amazon-cognito-identity-js';
+import { supabase } from '@/lib/supabase';
+import { User, Session, AuthError } from '@supabase/supabase-js';
 
-interface User {
+// Define proper TypeScript interfaces
+interface AppUser {
   id: string;
   email: string;
   name: string;
   phone: string;
   role: 'member' | 'admin' | 'pastor';
   church: string;
-}
-
-interface AuthContextType {
-  user: User | null;
-  isLoading: boolean;
-  login: (email: string, password: string) => Promise<any>;
-  signup: (userData: SignupData) => Promise<any>;
-  logout: () => void;
-  confirmSignup: (email: string, code: string) => Promise<any>;
-  resendConfirmationCode: (email: string) => Promise<any>;
-  forgotPassword: (email: string) => Promise<any>;
-  resetPassword: (email: string, code: string, newPassword: string) => Promise<any>;
 }
 
 interface SignupData {
@@ -32,159 +22,186 @@ interface SignupData {
   role: 'member' | 'admin' | 'pastor';
 }
 
-const userPool = new CognitoUserPool({
-  UserPoolId: process.env.NEXT_PUBLIC_AWS_USER_POOL_ID!,
-  ClientId: process.env.NEXT_PUBLIC_AWS_CLIENT_ID!,
-});
+interface AuthContextType {
+  user: AppUser | null;
+  isLoading: boolean;
+  login: (email: string, password: string) => Promise<{ user: User; session: Session }>;
+  signup: (userData: SignupData) => Promise<{ user: User | null; session: Session | null }>;
+  logout: () => Promise<void>;
+  confirmSignup?: (email: string, code: string) => Promise<unknown>;
+  resendConfirmationCode?: (email: string) => Promise<unknown>;
+  forgotPassword?: (email: string) => Promise<unknown>;
+  resetPassword?: (email: string, code: string, newPassword: string) => Promise<unknown>;
+}
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<AppUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    checkAuthState();
-  }, []);
-
-  const checkAuthState = async () => {
-    try {
-      const cognitoUser = userPool.getCurrentUser();
-      if (cognitoUser) {
-        cognitoUser.getSession((err: any, session: any) => {
-          if (err) {
-            setUser(null);
-            setIsLoading(false);
-            return;
-          }
-          
-          cognitoUser.getUserAttributes((err, attributes) => {
-            if (err) {
-              setUser(null);
-              setIsLoading(false);
-              return;
-            }
-            
-            const userData: User = {
-              id: session.getIdToken().payload.sub,
-              email: session.getIdToken().payload.email,
-              name: attributes?.find(attr => attr.getName() === 'name')?.getValue() || '',
-              phone: attributes?.find(attr => attr.getName() === 'phone_number')?.getValue() || '',
-              role: (attributes?.find(attr => attr.getName() === 'custom:role')?.getValue() as any) || 'member',
-              church: attributes?.find(attr => attr.getName() === 'custom:church')?.getValue() || '',
-            };
-            
-            setUser(userData);
-            setIsLoading(false);
-          });
-        });
-      } else {
+    // Check active sessions and set the user
+    const getSession = async (): Promise<void> => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          await fetchUserProfile(session.user.id);
+        } else {
+          setIsLoading(false);
+        }
+      } catch (error) {
+        console.error('Session error:', error);
         setIsLoading(false);
       }
+    };
+
+    getSession();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (session?.user) {
+          await fetchUserProfile(session.user.id);
+        } else {
+          setUser(null);
+          setIsLoading(false);
+        }
+      }
+    );
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  const fetchUserProfile = async (userId: string): Promise<void> => {
+    try {
+      const { data: profile, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (error) {
+        console.error('Error fetching user profile:', error);
+        setIsLoading(false);
+        return;
+      }
+
+      if (profile) {
+        setUser(profile);
+      }
+      setIsLoading(false);
     } catch (error) {
-      setUser(null);
+      console.error('Error in fetchUserProfile:', error);
       setIsLoading(false);
     }
   };
 
-  const login = async (email: string, password: string): Promise<any> => {
-    return new Promise((resolve, reject) => {
-      const cognitoUser = new CognitoUser({
-        Username: email,
-        Pool: userPool,
+  const signup = async (userData: SignupData): Promise<{ user: User | null; session: Session | null }> => {
+    try {
+      // Create auth user
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: userData.email,
+        password: userData.password,
       });
 
-      const authDetails = new AuthenticationDetails({
-        Username: email,
-        Password: password,
-      });
+      if (authError) {
+        throw new Error(authError.message);
+      }
 
-      cognitoUser.authenticateUser(authDetails, {
-        onSuccess: (session) => {
-          checkAuthState();
-          resolve(session);
-        },
-        onFailure: (err) => {
-          reject(err);
-        },
-        newPasswordRequired: (userAttributes) => {
-          resolve({ newPasswordRequired: true, userAttributes });
-        },
-      });
-    });
-  };
+      // Create user profile if user was created
+      if (authData.user) {
+        const { error: profileError } = await supabase
+          .from('users')
+          .insert([
+            {
+              id: authData.user.id,
+              email: userData.email,
+              name: userData.name,
+              phone: userData.phone,
+              role: userData.role,
+              church: userData.church,
+            },
+          ]);
 
-  const signup = async (userData: SignupData): Promise<any> => {
-    return new Promise((resolve, reject) => {
-      const attributeList = [
-        new CognitoUserAttribute({ Name: 'email', Value: userData.email }),
-        new CognitoUserAttribute({ Name: 'name', Value: userData.name }),
-        new CognitoUserAttribute({ Name: 'phone_number', Value: userData.phone }),
-        new CognitoUserAttribute({ Name: 'custom:role', Value: userData.role }),
-        new CognitoUserAttribute({ Name: 'custom:church', Value: userData.church }),
-      ];
-
-      userPool.signUp(
-        userData.email,
-        userData.password,
-        attributeList,
-        [],
-        (err, result) => {
-          if (err) {
-            reject(err);
-            return;
-          }
-          resolve(result);
+        if (profileError) {
+          // If profile creation fails, we should handle it appropriately
+          console.error('Profile creation error:', profileError);
+          throw new Error('Failed to create user profile');
         }
-      );
-    });
+      }
+
+      return authData;
+    } catch (error) {
+      console.error('Signup error:', error);
+      throw error;
+    }
   };
 
-  const confirmSignup = async (email: string, code: string): Promise<any> => {
-    return new Promise((resolve, reject) => {
-      const cognitoUser = new CognitoUser({
-        Username: email,
-        Pool: userPool,
-      });
-
-      cognitoUser.confirmRegistration(code, true, (err, result) => {
-        if (err) {
-          reject(err);
-          return;
-        }
-        resolve(result);
-      });
+  const login = async (email: string, password: string): Promise<{ user: User; session: Session }> => {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
     });
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    if (!data.user || !data.session) {
+      throw new Error('Login failed: No user or session returned');
+    }
+
+    return data;
   };
 
-  const logout = () => {
-    const cognitoUser = userPool.getCurrentUser();
-    if (cognitoUser) {
-      cognitoUser.signOut();
+  const logout = async (): Promise<void> => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.error('Logout error:', error);
     }
     setUser(null);
   };
 
-  // Implement other methods: resendConfirmationCode, forgotPassword, resetPassword
+  // Placeholder methods for compatibility (you can implement these later)
+  const confirmSignup = async (email: string, code: string): Promise<unknown> => {
+    return Promise.resolve({ success: true });
+  };
+
+  const resendConfirmationCode = async (email: string): Promise<unknown> => {
+    return Promise.resolve({ success: true });
+  };
+
+  const forgotPassword = async (email: string): Promise<unknown> => {
+    return Promise.resolve({ success: true });
+  };
+
+  const resetPassword = async (email: string, code: string, newPassword: string): Promise<unknown> => {
+    return Promise.resolve({ success: true });
+  };
+
+  const value: AuthContextType = {
+    user,
+    isLoading,
+    login,
+    signup,
+    logout,
+    confirmSignup,
+    resendConfirmationCode,
+    forgotPassword,
+    resetPassword,
+  };
 
   return (
-    <AuthContext.Provider value={{
-      user,
-      isLoading,
-      login,
-      signup,
-      logout,
-      confirmSignup,
-      resendConfirmationCode: async () => {},
-      forgotPassword: async () => {},
-      resetPassword: async () => {},
-    }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
 }
 
-export const useAuth = () => {
+export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');
