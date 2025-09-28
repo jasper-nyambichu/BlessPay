@@ -22,6 +22,15 @@ interface MpesaResponse {
   CheckoutRequestID: string;
   ResponseCode: string;
   ResponseDescription: string;
+  CustomerMessage?: string;
+}
+
+interface RequestBody {
+  amount: number;
+  phoneNumber: string;
+  paymentType: string;
+  description?: string;
+  userId?: string;
 }
 
 // Generate M-Pesa password
@@ -62,7 +71,7 @@ async function getAccessToken(): Promise<string> {
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
-    const body = await request.json();
+    const body: RequestBody = await request.json();
     const { amount, phoneNumber, paymentType, description, userId } = body;
     
     // Validate input

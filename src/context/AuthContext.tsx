@@ -1,9 +1,8 @@
 'use client';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
-import { User, Session, AuthError } from '@supabase/supabase-js';
+import { User, Session } from '@supabase/supabase-js';
 
-// Define proper TypeScript interfaces
 interface AppUser {
   id: string;
   email: string;
@@ -28,10 +27,6 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<{ user: User; session: Session }>;
   signup: (userData: SignupData) => Promise<{ user: User | null; session: Session | null }>;
   logout: () => Promise<void>;
-  confirmSignup?: (email: string, code: string) => Promise<unknown>;
-  resendConfirmationCode?: (email: string) => Promise<unknown>;
-  forgotPassword?: (email: string) => Promise<unknown>;
-  resetPassword?: (email: string, code: string, newPassword: string) => Promise<unknown>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -41,7 +36,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check active sessions and set the user
     const getSession = async (): Promise<void> => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
@@ -58,7 +52,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     getSession();
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (session?.user) {
@@ -101,7 +94,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signup = async (userData: SignupData): Promise<{ user: User | null; session: Session | null }> => {
     try {
-      // Create auth user
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: userData.email,
         password: userData.password,
@@ -111,7 +103,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw new Error(authError.message);
       }
 
-      // Create user profile if user was created
       if (authData.user) {
         const { error: profileError } = await supabase
           .from('users')
@@ -127,7 +118,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           ]);
 
         if (profileError) {
-          // If profile creation fails, we should handle it appropriately
           console.error('Profile creation error:', profileError);
           throw new Error('Failed to create user profile');
         }
@@ -165,33 +155,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
   };
 
-  // Placeholder methods for compatibility (you can implement these later)
-  const confirmSignup = async (email: string, code: string): Promise<unknown> => {
-    return Promise.resolve({ success: true });
-  };
-
-  const resendConfirmationCode = async (email: string): Promise<unknown> => {
-    return Promise.resolve({ success: true });
-  };
-
-  const forgotPassword = async (email: string): Promise<unknown> => {
-    return Promise.resolve({ success: true });
-  };
-
-  const resetPassword = async (email: string, code: string, newPassword: string): Promise<unknown> => {
-    return Promise.resolve({ success: true });
-  };
-
   const value: AuthContextType = {
     user,
     isLoading,
     login,
     signup,
     logout,
-    confirmSignup,
-    resendConfirmationCode,
-    forgotPassword,
-    resetPassword,
   };
 
   return (
