@@ -32,7 +32,7 @@ export default function ProtectedRoute({ children, requiredRole }: ProtectedRout
   }
 
   if (!user) {
-    return null; // Will redirect in useEffect
+    return null;
   }
 
   if (requiredRole && user.role !== requiredRole) {
@@ -40,7 +40,8 @@ export default function ProtectedRoute({ children, requiredRole }: ProtectedRout
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-red-600">Access Denied</h1>
-          <p className="text-gray-600">You don't have permission to access this page.</p>
+          {/* FIXED: Escaped apostrophe */}
+          <p className="text-gray-600">You don&apos;t have permission to access this page.</p>
         </div>
       </div>
     );

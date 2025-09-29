@@ -7,13 +7,20 @@ import { useAuth } from '@/context/AuthContext';
 export function LoginForm() {
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    email: string;
+    password: string;
+    name: string;
+    phone: string;
+    church: string;
+    role: 'member' | 'admin' | 'pastor';
+  }>({
     email: '',
     password: '',
     name: '',
     phone: '',
     church: '',
-    role: 'member' as const,
+    role: 'member',
   });
   const [isLoading, setIsLoading] = useState(false);
   const { login, signup } = useAuth();
@@ -110,7 +117,7 @@ export function LoginForm() {
 
                 <select
                   value={formData.role}
-                  onChange={(e) => setFormData({ ...formData, role: e.target.value as any })}
+                  onChange={(e) => setFormData({ ...formData, role: e.target.value as 'member' | 'admin' | 'pastor' })}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sda-blue focus:border-transparent"
                 >
                   <option value="member">Church Member</option>
