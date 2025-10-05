@@ -1,35 +1,44 @@
-import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+'use client';
+import { AuthProvider } from '@/context/AuthContext';
+import { NotificationProvider } from '@/context/NotificationContext';
+import { NotificationContainer } from '@/components/ui/Notification';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { AuthProvider } from '@/context/AuthContext';
 import './globals.css';
 
-const inter = Inter({ 
-  subsets: ['latin'],
-  variable: '--font-inter',
-});
+import { useNotification } from '@/context/NotificationContext';
 
-export const metadata: Metadata = {
-  title: 'BlessPay - SDA Church Offering System',
-  description: 'Manage tithes and offerings with ease.',
-};
+function NotificationWrapper() {
+  const { notifications, removeNotification } = useNotification();
+  return <NotificationContainer notifications={notifications} onDismiss={removeNotification} />;
+}
 
-export default function RootLayout({ 
-  children 
-}: { 
-  children: React.ReactNode 
+function AppProviders({ children }: { children: React.ReactNode }) {
+  return (
+    <NotificationProvider>
+      <AuthProvider>
+        {children}
+        <NotificationWrapper />
+      </AuthProvider>
+    </NotificationProvider>
+  );
+}
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
 }) {
   return (
     <html lang="en">
-      <body className={`${inter.className} min-h-screen flex flex-col bg-sda-gray`}>
-        <AuthProvider>
+      <body className="flex flex-col min-h-screen">
+        <AppProviders>
           <Navbar />
           <main className="flex-grow">
             {children}
           </main>
           <Footer />
-        </AuthProvider>
+        </AppProviders>
       </body>
     </html>
   );

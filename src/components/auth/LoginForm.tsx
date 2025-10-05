@@ -1,15 +1,17 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff, Mail, Lock, Church, User, Phone, AlertCircle, CheckCircle } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
+import { useNotification } from '@/context/NotificationContext';
 
 export function LoginForm() {
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [localError, setLocalError] = useState('');
+  const [passwordMatch, setPasswordMatch] = useState(true);
   const [passwordStrength, setPasswordStrength] = useState({
     hasMinLength: false,
     hasUpperCase: false,
@@ -21,14 +23,32 @@ export function LoginForm() {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
+    confirmPassword: '',
     name: '',
     phone: '',
     church: '',
     role: 'member' as 'member' | 'admin' | 'pastor',
   });
 
-  const { login, signup, loading } = useAuth();
+  const { login, signup, loading, error: authError, clearError } = useAuth();
+  const { addNotification } = useNotification();
   const router = useRouter();
+
+  // Clear auth errors when switching between login/signup
+  useEffect(() => {
+    if (authError && clearError) {
+      clearError();
+    }
+    setLocalError('');
+    setPasswordMatch(true);
+  }, [isLogin, authError, clearError]);
+
+  // Display auth errors from context
+  useEffect(() => {
+    if (authError) {
+      setLocalError(authError);
+    }
+  }, [authError]);
 
   const validatePassword = (password: string) => {
     const strength = {
@@ -45,17 +65,61 @@ export function LoginForm() {
   const handlePasswordChange = (password: string) => {
     setFormData({ ...formData, password });
     validatePassword(password);
+    // Check if passwords match
+    if (!isLogin) {
+      setPasswordMatch(password === formData.confirmPassword);
+    }
+  };
+
+  const handleConfirmPasswordChange = (confirmPassword: string) => {
+    setFormData({ ...formData, confirmPassword });
+    setPasswordMatch(formData.password === confirmPassword);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setSuccess('');
+    setLocalError('');
+    setPasswordMatch(true);
+
+    // Clear any existing auth errors
+    if (clearError) {
+      clearError();
+    }
 
     console.log('Form submitted with data:', formData);
 
-    if (!isLogin && !validatePassword(formData.password)) {
-      setError('Please ensure your password meets all requirements');
+    // Validation
+    if (!isLogin) {
+      if (!formData.name.trim()) {
+        setLocalError('Full name is required');
+        return;
+      }
+      if (!formData.phone.trim()) {
+        setLocalError('Phone number is required');
+        return;
+      }
+      if (!formData.church.trim()) {
+        setLocalError('Church name is required');
+        return;
+      }
+      if (!validatePassword(formData.password)) {
+        setLocalError('Please ensure your password meets all requirements');
+        return;
+      }
+      if (formData.password !== formData.confirmPassword) {
+        setLocalError('Passwords do not match');
+        setPasswordMatch(false);
+        return;
+      }
+    }
+
+    if (!formData.email.trim()) {
+      setLocalError('Email is required');
+      return;
+    }
+
+    if (!formData.password) {
+      setLocalError('Password is required');
       return;
     }
 
@@ -64,16 +128,24 @@ export function LoginForm() {
         console.log('Attempting login...');
         await login(formData.email, formData.password);
         console.log('Login successful, redirecting...');
-        router.push('/dashboard');
+        // Redirect happens in AuthContext
       } else {
         console.log('Attempting signup...');
-        await signup(formData);
-        setSuccess('Account created successfully! Please check your email for verification.');
+        await signup({
+          email: formData.email,
+          password: formData.password,
+          name: formData.name,
+          phone: formData.phone,
+          church: formData.church,
+          role: formData.role,
+        });
         console.log('Signup successful');
-        // Clear form
+        
+        // Clear form only on successful signup
         setFormData({
           email: '',
           password: '',
+          confirmPassword: '',
           name: '',
           phone: '',
           church: '',
@@ -86,10 +158,12 @@ export function LoginForm() {
           hasNumber: false,
           hasSpecialChar: false,
         });
+        
+        // Success notification and auto-login is handled in AuthContext
       }
     } catch (error: any) {
       console.error('Authentication error:', error);
-      setError(error.message || 'Authentication failed. Please try again.');
+      // Error is now handled by AuthContext and notifications
     }
   };
 
@@ -99,6 +173,9 @@ export function LoginForm() {
       {text}
     </div>
   );
+
+  // Determine which error to display (local validation errors vs auth errors)
+  const displayError = localError || authError;
 
   return (
     <motion.div
@@ -118,8 +195,8 @@ export function LoginForm() {
               type="button"
               onClick={() => {
                 setIsLogin(true);
-                setError('');
-                setSuccess('');
+                setLocalError('');
+                if (clearError) clearError();
               }}
               className={`flex-1 py-2 px-4 rounded-md font-medium transition-all ${
                 isLogin ? 'bg-white shadow-sm text-blue-600' : 'text-gray-600'
@@ -131,8 +208,8 @@ export function LoginForm() {
               type="button"
               onClick={() => {
                 setIsLogin(false);
-                setError('');
-                setSuccess('');
+                setLocalError('');
+                if (clearError) clearError();
               }}
               className={`flex-1 py-2 px-4 rounded-md font-medium transition-all ${
                 !isLogin ? 'bg-white shadow-sm text-blue-600' : 'text-gray-600'
@@ -142,17 +219,10 @@ export function LoginForm() {
             </button>
           </div>
 
-          {error && (
+          {displayError && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center text-red-700">
               <AlertCircle className="w-5 h-5 mr-2" />
-              {error}
-            </div>
-          )}
-
-          {success && (
-            <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg flex items-center text-green-700">
-              <CheckCircle className="w-5 h-5 mr-2" />
-              {success}
+              {displayError}
             </div>
           )}
 
@@ -167,7 +237,7 @@ export function LoginForm() {
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent"
-                    required
+                    required={!isLogin}
                   />
                 </div>
 
@@ -179,7 +249,7 @@ export function LoginForm() {
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                     className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent"
-                    required
+                    required={!isLogin}
                   />
                 </div>
 
@@ -191,7 +261,7 @@ export function LoginForm() {
                     value={formData.church}
                     onChange={(e) => setFormData({ ...formData, church: e.target.value })}
                     className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent"
-                    required
+                    required={!isLogin}
                   />
                 </div>
 
@@ -238,6 +308,37 @@ export function LoginForm() {
                 {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
             </div>
+
+            {!isLogin && (
+              <>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+                  <input
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    placeholder="Confirm Password"
+                    value={formData.confirmPassword}
+                    onChange={(e) => handleConfirmPasswordChange(e.target.value)}
+                    className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent ${
+                      !passwordMatch && formData.confirmPassword ? 'border-red-300' : 'border-gray-300'
+                    }`}
+                    required={!isLogin}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                  >
+                    {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
+                {!passwordMatch && formData.confirmPassword && (
+                  <div className="text-red-500 text-sm flex items-center">
+                    <AlertCircle className="w-4 h-4 mr-1" />
+                    Passwords do not match
+                  </div>
+                )}
+              </>
+            )}
 
             {!isLogin && (
               <div className="p-4 bg-gray-50 rounded-lg space-y-2">
