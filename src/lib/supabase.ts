@@ -1,21 +1,12 @@
+// lib/supabaseClient.js or similar file
 import { createClient } from '@supabase/supabase-js'
 
-// These will be set from environment variables
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-// Validate environment variables
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error(
-    'Supabase environment variables are missing. Please check your .env.local file.'
-  )
+// Check if environment variables exist
+if (!supabaseUrl || !supabaseKey) {
+  throw new Error('Supabase environment variables are missing');
 }
 
-// Create and export the Supabase client
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    persistSession: true,
-    autoRefreshToken: true,
-    detectSessionInUrl: true
-  }
-})
+export const supabase = createClient(supabaseUrl as string, supabaseKey as string)

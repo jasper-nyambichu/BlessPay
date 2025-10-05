@@ -6,6 +6,8 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  // Disable static generation for not-found page
+  output: 'standalone',
 }
 
 module.exports = nextConfig
