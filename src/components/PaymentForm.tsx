@@ -1,40 +1,105 @@
 'use client';
 
-import { CreditCard } from 'lucide-react';
-import { motion } from 'framer-motion';
-import Button from './ui/Button';
-import Input from './ui/Input';
+import React, { useState, useEffect } from 'react';
+import { usePaystackPayment } from '@/hooks/usePaystackPayment';
+import { PaymentService } from '@/services/paymentService';
 import LoadingSpinner from './ui/LoadingSpinner';
 
-export default function PaymentForm() {
-  return (
-    <motion.div
-      initial={{ scale: 0.9, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-      transition={{ duration: 0.3 }}
-      className="w-full max-w-md bg-white p-6 rounded-lg shadow-lg"
-    >
-      <h2 className="text-2xl font-bold text-sda-blue mb-4">Payment</h2>
-      <form className="space-y-4">
-        <div>
-          <label className="flex items-center gap-2">
-            <CreditCard className="w-5 h-5 text-gray-400" />
-            <Input placeholder="Phone Number" type="tel" />
-          </label>
-        </div>
-        <div>
-          <select className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-sda-blue">
-            <option value="tithe">Tithe (10%)</option>
-            <option value="offering">General Offering</option>
-            <option value="sabbath-school">Sabbath School</option>
-          </select>
-        </div>
-        <div>
-          <Input placeholder="Amount (KSH)" type="number" />
-        </div>
-        <Button className="w-full">Pay with M-Pesa</Button>
-        <LoadingSpinner />
-      </form>
-    </motion.div>
-  );
+interface PaymentFormProps {
+  userEmail: string;
+  amount: number;
+  onPaymentSuccess?: (response: any) => void;
+  onPaymentError?: (error: string) => void;
 }
+
+export const PaymentForm: React.FC<PaymentFormProps> = ({
+  userEmail,
+  amount,
+  onPaymentSuccess,
+  onPaymentError
+}) => {
+  const [paymentReference, setPaymentReference] = useState('');
+  const { initializePayment, isProcessing, error } = usePaystackPayment();
+
+  useEffect(() => {
+    setPaymentReference(PaymentService.generateReference());
+  }, []);
+
+  const handlePayment = async () => {
+    try {
+      const paymentData = {
+        email: userEmail,
+        amount: amount,
+        reference: paymentReference,
+        currency: 'NGN',
+        metadata: {
+          custom_fields: [
+            {
+              display_name: "Payment For",
+              variable_name: "payment_for",
+              value: "BLessPay Service"
+            }
+          ]
+        }
+      };
+
+      const response = await initializePayment(paymentData);
+      
+      // Verify payment with backend
+      await PaymentService.verifyPayment(response.data.reference);
+      
+      // Save payment record
+      await PaymentService.savePayment({
+        ...response.data,
+        amount,
+        userEmail,
+        timestamp: new Date().toISOString()
+      });
+
+      onPaymentSuccess?.(response);
+
+    } catch (error: any) {
+      onPaymentError?.(error.message || 'Payment failed');
+    }
+  };
+
+  return (
+    <div className="payment-container">
+      <div className="payment-details">
+        <div className="detail-row">
+          <span>Amount:</span>
+          <span>₦{amount.toLocaleString()}</span>
+        </div>
+        <div className="detail-row">
+          <span>Email:</span>
+          <span>{userEmail}</span>
+        </div>
+        <div className="detail-row">
+          <span>Reference:</span>
+          <span className="reference">{paymentReference}</span>
+        </div>
+      </div>
+
+      <button
+        onClick={handlePayment}
+        disabled={isProcessing}
+        className="payment-button"
+      >
+        {isProcessing ? (
+          <div className="button-loading">
+            <LoadingSpinner />
+            Processing...
+          </div>
+        ) : (
+          `Pay ₦${amount.toLocaleString()}`
+        )}
+      </button>
+
+      {error && (
+        <div className="error-message">
+          {error}
+        </div>
+      )}
+    </div>
+  );
+};
