@@ -215,75 +215,86 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 };
 
-  const signup = async (userData: {
-    email: string;
-    password: string;
-    name: string;
-    phone: string;
-    church: string;
-    role: 'member' | 'admin' | 'pastor';
-  }) => {
-    setLoading(true);
-    clearError();
-    
-    try {
-      // Create auth user
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: userData.email.trim().toLowerCase(),
-        password: userData.password,
-        options: {
-          data: {
-            name: userData.name,
-            phone: userData.phone,
-            church: userData.church,
-            role: userData.role,
-          },
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
+ const signup = async (userData: {
+  email: string;
+  password: string;
+  name: string;
+  phone: string;
+  church: string;
+  role: 'member' | 'admin' | 'pastor';
+}) => {
+  setLoading(true);
+  clearError();
+  
+  try {
+    // Create auth user
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+      email: userData.email.trim().toLowerCase(),
+      password: userData.password,
+      options: {
+        data: {
+          name: userData.name,
+          phone: userData.phone,
+          church: userData.church,
+          role: userData.role,
         },
-      });
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
 
-      if (authError) {
-        console.error('Auth signup error:', authError);
-        throw authError;
-      }
-
-      if (!authData.user) {
-        throw new Error('No user data received after signup');
-      }
-
-      // Create user profile with correct field names
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .insert([
-          {
-            id: authData.user.id,
-            email: userData.email.trim().toLowerCase(),
-            full_name: userData.name,
-            phone_number: userData.phone,
-            church_name: userData.church,
-            role: userData.role,
-          },
-        ]);
-
-      if (profileError) {
-        console.error('Profile creation error:', profileError);
-        // Don't throw here - the user was created in auth, just profile failed
-      }
-
-      // SUCCESS: Show notification
-      addNotification('success', 'Account Created!', 'Your account has been created successfully. You can now log in.');
-      
-      // Auto-login after successful signup
-      await login(userData.email, userData.password);
-      
-    } catch (error: any) {
-      const errorMessage = error.message || 'Signup failed. Please try again.';
-      setError(errorMessage);
-      addNotification('error', 'Signup Failed', errorMessage);
-      setLoading(false);
-      throw new Error(errorMessage);
+    if (authError) {
+      console.error('Auth signup error:', authError);
+      throw authError;
     }
-  };
+
+    if (!authData.user) {
+      throw new Error('No user data received after signup');
+    }
+
+    // Create user profile with correct field names
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .insert([
+        {
+          id: authData.user.id,
+          email: userData.email.trim().toLowerCase(),
+          full_name: userData.name,
+          phone_number: userData.phone,
+          church_name: userData.church,
+          role: userData.role,
+        },
+      ]);
+
+    if (profileError) {
+      console.error('Profile creation error:', profileError);
+      // Don't throw here - the user was created in auth, just profile failed
+    }
+
+    // Check if email confirmation is required
+    if (authData.session) {
+      // User is immediately logged in (email confirmation might not be required)
+      await fetchUserProfile(authData.user.id);
+      addNotification('success', 'Account Created!', 'Your account has been created successfully.');
+      router.push('/dashboard');
+    } else {
+      // Email confirmation required
+      addNotification(
+        'success', 
+        'Account Created!', 
+        'Please check your email to confirm your account before logging in.'
+      );
+      // Don't auto-login, wait for email confirmation
+      setLoading(false);
+    }
+    
+  } catch (error: any) {
+    const errorMessage = error.message || 'Signup failed. Please try again.';
+    setError(errorMessage);
+    addNotification('error', 'Signup Failed', errorMessage);
+    setLoading(false);
+    throw new Error(errorMessage);
+  }
+};
 
   const updateProfile = async (profileData: Partial<AuthUser>) => {
     if (!user) throw new Error('No user logged in');
