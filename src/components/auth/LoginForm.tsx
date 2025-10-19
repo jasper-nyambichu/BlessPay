@@ -19,7 +19,6 @@ export function LoginForm() {
     hasNumber: false,
     hasSpecialChar: false,
   });
-
   const [formData, setFormData] = useState({
     email: '',
     password: '',

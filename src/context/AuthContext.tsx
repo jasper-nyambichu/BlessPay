@@ -96,83 +96,109 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  const fetchUserProfile = async (userId: string) => {
-    try {
-      clearError();
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
+ const fetchUserProfile = async (userId: string) => {
+  try {
+    clearError();
+    console.log('Fetching profile for user:', userId);
+    
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single();
 
-      if (error) {
-        console.error('Error fetching user profile:', error);
-        
-        if (error.code === 'PGRST116') {
-          await createUserProfileFromSession(userId);
-          return;
-        }
-        
-        setError('Failed to fetch user profile');
-        setLoading(false);
+    if (error) {
+      console.error('Error fetching user profile:', error);
+      
+      // Check if it's a "not found" error
+      if (error.code === 'PGRST116' || error.message?.includes('No rows found')) {
+        console.log('Profile not found, creating new profile...');
+        await createUserProfileFromSession(userId);
         return;
       }
       
-      const userProfile: AuthUser = {
-        id: data.id,
-        email: data.email || '',
-        full_name: data.full_name,
-        phone_number: data.phone_number,
-        church_name: data.church_name,
-        role: data.role || 'member',
-        created_at: data.created_at,
-        updated_at: data.updated_at,
-        avatar_url: data.avatar_url
-      };
-      
-      setUser(userProfile);
-    } catch (error) {
-      console.error('Error in fetchUserProfile:', error);
-      setError('Error loading user profile');
-    } finally {
+      setError('Failed to fetch user profile: ' + error.message);
       setLoading(false);
+      return;
     }
-  };
+    
+    // If we have data, create the user profile
+    const userProfile: AuthUser = {
+      id: data.id,
+      email: data.email || '',
+      full_name: data.full_name,
+      phone_number: data.phone_number,
+      church_name: data.church_name,
+      role: data.role || 'member',
+      created_at: data.created_at,
+      updated_at: data.updated_at,
+      avatar_url: data.avatar_url
+    };
+    
+    console.log('User profile fetched successfully:', userProfile);
+    setUser(userProfile);
+  } catch (error: any) {
+    console.error('Error in fetchUserProfile:', error);
+    setError('Error loading user profile: ' + error.message);
+  } finally {
+    setLoading(false);
+  }
+};
 
-  const createUserProfileFromSession = async (userId: string) => {
-    try {
-      clearError();
-      const { data: { user: authUser }, error: userError } = await supabase.auth.getUser();
+ const createUserProfileFromSession = async (userId: string) => {
+  try {
+    clearError();
+    console.log('Creating profile for user:', userId);
+    
+    const { data: { user: authUser }, error: userError } = await supabase.auth.getUser();
+    
+    if (userError || !authUser) {
+      console.error('Error getting auth user:', userError);
+      throw new Error(userError?.message || 'No auth user found');
+    }
+
+    // Get user metadata from auth
+    const userMetadata = authUser.user_metadata || {};
+    
+    console.log('Creating profile with metadata:', userMetadata);
+
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .insert([
+        {
+          id: userId,
+          email: authUser.email,
+          full_name: userMetadata.name || authUser.email?.split('@')[0] || 'User',
+          phone_number: userMetadata.phone || '',
+          church_name: userMetadata.church || '',
+          role: userMetadata.role || 'member',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
+      ]);
+
+    if (profileError) {
+      console.error('Profile creation error:', profileError);
       
-      if (userError || !authUser) {
-        throw new Error(userError?.message || 'No auth user found');
+      // If it's a duplicate key error, the profile might already exist
+      if (profileError.code === '23505') {
+        console.log('Profile already exists, fetching again...');
+        await fetchUserProfile(userId);
+        return;
       }
-
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .insert([
-          {
-            id: userId,
-            email: authUser.email,
-            full_name: authUser.user_metadata?.name || 'User',
-            phone_number: authUser.user_metadata?.phone || '',
-            church_name: authUser.user_metadata?.church || '',
-            role: authUser.user_metadata?.role || 'member',
-          },
-        ]);
-
-      if (profileError) {
-        console.error('Profile creation error:', profileError);
-        throw profileError;
-      }
-
-      await fetchUserProfile(userId);
-    } catch (error) {
-      console.error('Error creating user profile:', error);
-      setError('Failed to create user profile');
-      setLoading(false);
+      
+      throw profileError;
     }
-  };
+
+    console.log('Profile created successfully, fetching...');
+    // Fetch the newly created profile
+    await fetchUserProfile(userId);
+  } catch (error: any) {
+    console.error('Error creating user profile:', error);
+    setError('Failed to create user profile: ' + error.message);
+    setLoading(false);
+  }
+};
 
  const login = async (email: string, password: string) => {
   setLoading(true);
@@ -227,6 +253,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   clearError();
   
   try {
+    // Get the current origin (handles both localhost and production)
+    const origin = typeof window !== 'undefined' ? window.location.origin : '';
+    
+    console.log('Signing up with redirect URL:', `${origin}/auth/callback`);
+
     // Create auth user
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email: userData.email.trim().toLowerCase(),
@@ -238,7 +269,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           church: userData.church,
           role: userData.role,
         },
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
+        emailRedirectTo: `${origin}/auth/callback`,
       },
     });
 
@@ -281,7 +312,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       addNotification(
         'success', 
         'Account Created!', 
-        'Please check your email to confirm your account before logging in.'
+        'Please check your email to confirm your account. You will be automatically logged in after confirmation.'
       );
       // Don't auto-login, wait for email confirmation
       setLoading(false);
