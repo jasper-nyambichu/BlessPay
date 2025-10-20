@@ -12,6 +12,7 @@ export function LoginForm() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [localError, setLocalError] = useState('');
   const [passwordMatch, setPasswordMatch] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState({
     hasMinLength: false,
     hasUpperCase: false,
@@ -29,9 +30,12 @@ export function LoginForm() {
     role: 'member' as 'member' | 'admin' | 'pastor',
   });
 
-  const { login, signup, loading, error: authError, clearError } = useAuth();
+  const { login, signup, loading: authLoading, error: authError, clearError } = useAuth();
   const { addNotification } = useNotification();
   const router = useRouter();
+
+  // Use a separate loading state for form submission
+  const loading = authLoading || isSubmitting;
 
   // Clear auth errors when switching between login/signup
   useEffect(() => {
@@ -46,6 +50,7 @@ export function LoginForm() {
   useEffect(() => {
     if (authError) {
       setLocalError(authError);
+      setIsSubmitting(false);
     }
   }, [authError]);
 
@@ -64,7 +69,6 @@ export function LoginForm() {
   const handlePasswordChange = (password: string) => {
     setFormData({ ...formData, password });
     validatePassword(password);
-    // Check if passwords match
     if (!isLogin) {
       setPasswordMatch(password === formData.confirmPassword);
     }
@@ -79,57 +83,65 @@ export function LoginForm() {
     e.preventDefault();
     setLocalError('');
     setPasswordMatch(true);
+    setIsSubmitting(true);
 
     // Clear any existing auth errors
     if (clearError) {
       clearError();
     }
 
-    console.log('Form submitted with data:', formData);
+    console.log('🔄 Form submission started...');
 
     // Validation
     if (!isLogin) {
       if (!formData.name.trim()) {
         setLocalError('Full name is required');
+        setIsSubmitting(false);
         return;
       }
       if (!formData.phone.trim()) {
         setLocalError('Phone number is required');
+        setIsSubmitting(false);
         return;
       }
       if (!formData.church.trim()) {
         setLocalError('Church name is required');
+        setIsSubmitting(false);
         return;
       }
       if (!validatePassword(formData.password)) {
         setLocalError('Please ensure your password meets all requirements');
+        setIsSubmitting(false);
         return;
       }
       if (formData.password !== formData.confirmPassword) {
         setLocalError('Passwords do not match');
         setPasswordMatch(false);
+        setIsSubmitting(false);
         return;
       }
     }
 
     if (!formData.email.trim()) {
       setLocalError('Email is required');
+      setIsSubmitting(false);
       return;
     }
 
     if (!formData.password) {
       setLocalError('Password is required');
+      setIsSubmitting(false);
       return;
     }
 
     try {
       if (isLogin) {
-        console.log('Attempting login...');
+        console.log('🔐 Attempting login from form...');
         await login(formData.email, formData.password);
-        console.log('Login successful, redirecting...');
-        // Redirect happens in AuthContext
+        console.log('✅ Login successful from form');
+        // DO NOT call router.push here - it's handled in AuthContext
       } else {
-        console.log('Attempting signup...');
+        console.log('📝 Attempting signup from form...');
         await signup({
           email: formData.email,
           password: formData.password,
@@ -138,31 +150,16 @@ export function LoginForm() {
           church: formData.church,
           role: formData.role,
         });
-        console.log('Signup successful');
+        console.log('✅ Signup successful from form');
         
-        // Clear form only on successful signup
-        setFormData({
-          email: '',
-          password: '',
-          confirmPassword: '',
-          name: '',
-          phone: '',
-          church: '',
-          role: 'member',
-        });
-        setPasswordStrength({
-          hasMinLength: false,
-          hasUpperCase: false,
-          hasLowerCase: false,
-          hasNumber: false,
-          hasSpecialChar: false,
-        });
-        
-        // Success notification and auto-login is handled in AuthContext
+        // Only clear form if email confirmation is not required
+        // The AuthContext handles the redirect logic
       }
     } catch (error: any) {
-      console.error('Authentication error:', error);
-      // Error is now handled by AuthContext and notifications
+      console.error('❌ Authentication error in form:', error);
+      // Error is handled by AuthContext and notifications
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -173,7 +170,6 @@ export function LoginForm() {
     </div>
   );
 
-  // Determine which error to display (local validation errors vs auth errors)
   const displayError = localError || authError;
 
   return (
@@ -237,6 +233,7 @@ export function LoginForm() {
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent"
                     required={!isLogin}
+                    disabled={loading}
                   />
                 </div>
 
@@ -249,6 +246,7 @@ export function LoginForm() {
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                     className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent"
                     required={!isLogin}
+                    disabled={loading}
                   />
                 </div>
 
@@ -261,6 +259,7 @@ export function LoginForm() {
                     onChange={(e) => setFormData({ ...formData, church: e.target.value })}
                     className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent"
                     required={!isLogin}
+                    disabled={loading}
                   />
                 </div>
 
@@ -268,6 +267,7 @@ export function LoginForm() {
                   value={formData.role}
                   onChange={(e) => setFormData({ ...formData, role: e.target.value as 'member' | 'admin' | 'pastor' })}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+                  disabled={loading}
                 >
                   <option value="member">Church Member</option>
                   <option value="pastor">Pastor</option>
@@ -285,6 +285,7 @@ export function LoginForm() {
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent"
                 required
+                disabled={loading}
               />
             </div>
 
@@ -298,11 +299,13 @@ export function LoginForm() {
                 className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent"
                 required
                 minLength={8}
+                disabled={loading}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                disabled={loading}
               >
                 {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
@@ -321,11 +324,13 @@ export function LoginForm() {
                       !passwordMatch && formData.confirmPassword ? 'border-red-300' : 'border-gray-300'
                     }`}
                     required={!isLogin}
+                    disabled={loading}
                   />
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                    disabled={loading}
                   >
                     {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
@@ -372,7 +377,11 @@ export function LoginForm() {
 
           {isLogin && (
             <div className="mt-6 text-center">
-              <button type="button" className="text-blue-600 hover:underline text-sm">
+              <button 
+                type="button" 
+                className="text-blue-600 hover:underline text-sm"
+                disabled={loading}
+              >
                 Forgot your password?
               </button>
             </div>
