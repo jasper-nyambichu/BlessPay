@@ -1,3 +1,4 @@
+// src/context/AuthContext.tsx (Updated)
 'use client';
 import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
@@ -5,14 +6,13 @@ import { User, Session } from '@supabase/supabase-js';
 import { useRouter } from 'next/navigation';
 import { useNotification } from './NotificationContext';
 
-// More flexible interface that matches common Supabase profiles table structure
 interface AuthUser {
   id: string;
-  email?: string;
-  full_name?: string | null;
-  phone_number?: string | null;
-  church_name?: string | null;
-  role?: 'member' | 'admin' | 'pastor' | string;
+  email: string;
+  full_name: string | null;
+  phone_number: string | null;
+  church_name: string | null;
+  role: 'member' | 'admin' | 'pastor';
   created_at: string;
   updated_at?: string;
   avatar_url?: string;
@@ -36,6 +36,7 @@ interface AuthContextType {
   error: string | null;
   clearError: () => void;
   isAuthenticated: boolean;
+  isInitialized: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -240,36 +241,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const initializeAuth = async () => {
       try {
         setLoading(true);
-        console.log('🚀 Initializing auth...');
         
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError) {
-          console.error('❌ Session error:', sessionError);
+          console.error('Session error:', sessionError);
           setError('Failed to get session');
           setIsInitialized(true);
           setLoading(false);
           return;
         }
 
-        console.log('📋 Session found:', session ? 'Yes' : 'No');
         setSession(session);
         
         if (session?.user) {
-          console.log('👤 User found in session, fetching profile...');
-          const userProfile = await fetchUserProfile(session.user.id);
-          setUser(userProfile);
+          await fetchUserProfile(session.user.id);
         } else {
-          console.log('👤 No user in session');
           setUser(null);
         }
       } catch (error) {
-        console.error('❌ Auth initialization error:', error);
+        console.error('Auth initialization error:', error);
         setError('Authentication initialization failed');
       } finally {
         setLoading(false);
         setIsInitialized(true);
-        console.log('✅ Auth initialization complete');
       }
     };
 
@@ -277,20 +272,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('🔄 Auth state changed:', event, session ? 'Has session' : 'No session');
-        
         setSession(session);
         
         if (session?.user) {
           try {
             setLoading(true);
-            const userProfile = await fetchUserProfile(session.user.id);
-            setUser(userProfile);
+            await fetchUserProfile(session.user.id);
             setError(null);
           } catch (error: any) {
-            console.error('❌ Error handling auth state change:', error);
+            console.error('Error handling auth state change:', error);
             setError('Failed to load user profile');
-            // Don't set user to null here - keep existing user if profile fetch fails
           } finally {
             setLoading(false);
           }
@@ -517,6 +508,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     error,
     clearError,
     isAuthenticated: !!user && !!session,
+    isInitialized, // Add this to track initialization
   };
 
   return (

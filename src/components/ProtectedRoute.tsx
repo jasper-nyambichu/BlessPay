@@ -1,50 +1,33 @@
+// src/components/ProtectedRoute.tsx
 'use client';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
-import { Spinner } from './Spinner';
+import LoadingSpinner from './ui/LoadingSpinner';
 
-interface ProtectedRouteProps {
-  children: React.ReactNode;
-  requiredRole?: 'member' | 'pastor' | 'admin';
-}
-
-export default function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) {
-  const { user, isLoading } = useAuth();
+export default function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { user, loading, isInitialized } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (!isLoading && !user) {
+    if (isInitialized && !loading && !user) {
       router.push('/login');
     }
-    
-    if (!isLoading && user && requiredRole && user.role !== requiredRole) {
-      router.push('/dashboard');
-    }
-  }, [user, isLoading, router, requiredRole]);
+  }, [user, loading, isInitialized, router]);
 
-  if (isLoading) {
+  if (!isInitialized || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Spinner size="lg" />
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+        <div className="text-center">
+          <LoadingSpinner size="lg" className="mx-auto mb-4" />
+          <p className="text-gray-600">Loading...</p>
+        </div>
       </div>
     );
   }
 
   if (!user) {
     return null;
-  }
-
-  if (requiredRole && user.role !== requiredRole) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-red-600">Access Denied</h1>
-          {/* FIXED: Escaped apostrophe */}
-          <p className="text-gray-600">You don&apos;t have permission to access this page.</p>
-        </div>
-      </div>
-    );
   }
 
   return <>{children}</>;
