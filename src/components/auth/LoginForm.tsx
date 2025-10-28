@@ -1,11 +1,12 @@
-// src/components/auth/LoginForm.tsx (Modernized)
+// src/components/auth/LoginForm.tsx (Modernized - New Design)
 'use client';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Eye, EyeOff, Mail, Lock, Church, User, Phone, AlertCircle, CheckCircle, Heart } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, Church, User, Phone, AlertCircle, CheckCircle, Heart, ArrowRight } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useNotification } from '@/context/NotificationContext';
+import Image from 'next/image';
 
 export function LoginForm() {
   const [isLogin, setIsLogin] = useState(true);
@@ -35,7 +36,6 @@ export function LoginForm() {
   const { addNotification } = useNotification();
   const router = useRouter();
 
-  // Only show loading when actually submitting, not during auth initialization
   const loading = isSubmitting;
 
   useEffect(() => {
@@ -53,10 +53,9 @@ export function LoginForm() {
     }
   }, [authError]);
 
-  // Show loading screen until auth is initialized
   if (!isInitialized) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-pink-50">
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -65,7 +64,7 @@ export function LoginForm() {
           <motion.div
             animate={{ rotate: 360 }}
             transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-            className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"
+            className="w-16 h-16 border-4 border-purple-600 border-t-transparent rounded-full mx-auto mb-4"
           />
           <h2 className="text-xl font-semibold text-gray-700">BlessPay</h2>
           <p className="text-gray-500">Loading...</p>
@@ -109,7 +108,6 @@ export function LoginForm() {
       clearError();
     }
 
-    // Validation
     if (!isLogin) {
       if (!formData.name.trim()) {
         setLocalError('Full name is required');
@@ -197,47 +195,93 @@ export function LoginForm() {
   const displayError = localError || authError;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-indigo-100 p-4">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="max-w-md w-full bg-white/80 backdrop-blur-lg rounded-2xl shadow-2xl overflow-hidden border border-white/20"
-      >
-        {/* Header */}
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-8 text-center relative overflow-hidden">
+    <div className="min-h-screen flex">
+      {/* Left Section - Background Image & Content */}
+      <div className="hidden lg:flex lg:w-1/2 relative bg-gradient-to-br from-purple-900 via-purple-800 to-pink-700">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent"></div>
+        </div>
+        
+        {/* Content */}
+        <div className="relative z-10 flex flex-col justify-between p-12 text-white w-full">
           <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 0.2 }}
-            className="absolute -top-6 -right-6 w-24 h-24 bg-white/10 rounded-full"
-          />
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 0.3 }}
-            className="absolute -bottom-6 -left-6 w-20 h-20 bg-white/10 rounded-full"
-          />
-          
-          <motion.div
-            initial={{ y: -20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.1 }}
-            className="relative z-10"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="flex items-center gap-3 mb-8"
           >
-            <div className="flex items-center justify-center mb-4">
-              <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mr-3">
-                <Heart className="w-6 h-6" />
-              </div>
-              <h1 className="text-3xl font-bold">BlessPay</h1>
+            <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+              <Heart className="w-6 h-6" />
             </div>
-            <p className="text-blue-100 text-sm">Seventh-day Adventist Offering System</p>
+            <span className="text-xl font-bold">BlessPay</span>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="max-w-md"
+          >
+            <h1 className="text-4xl font-bold mb-4 leading-tight">
+              Welcome to Your Spiritual Giving Journey
+            </h1>
+            <p className="text-purple-200 text-lg leading-relaxed">
+              Join thousands of faithful members in supporting our church's mission through secure, 
+              convenient digital offerings.
+            </p>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4 }}
+            className="flex items-center gap-4 text-purple-200"
+          >
+            <div className="flex-1 h-px bg-purple-500"></div>
+            <span className="text-sm">"God loves a cheerful giver" - 2 Corinthians 9:7</span>
+            <div className="flex-1 h-px bg-purple-500"></div>
           </motion.div>
         </div>
+      </div>
 
-        <div className="p-8">
+      {/* Right Section - Login Form */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-white">
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6 }}
+          className="max-w-md w-full"
+        >
+          {/* Mobile Header */}
+          <div className="lg:hidden mb-8 text-center">
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                <Heart className="w-6 h-6 text-purple-600" />
+              </div>
+              <span className="text-2xl font-bold text-gray-900">BlessPay</span>
+            </div>
+            <p className="text-gray-600">Seventh-day Adventist Offering System</p>
+          </div>
+
+          {/* Form Header */}
+          <div className="text-center mb-8">
+            <motion.h2
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-3xl font-bold text-gray-900 mb-2"
+            >
+              {isLogin ? 'Welcome Back!' : 'Create Account'}
+            </motion.h2>
+            <p className="text-gray-600">
+              {isLogin 
+                ? 'Sign in to continue your spiritual giving journey' 
+                : 'Join our community of faithful givers'
+              }
+            </p>
+          </div>
+
           {/* Toggle Buttons */}
-          <div className="flex mb-8 bg-gray-100 rounded-xl p-1">
+          <div className="flex bg-gray-100 rounded-2xl p-1 mb-8">
             <button
               type="button"
               onClick={() => {
@@ -245,9 +289,9 @@ export function LoginForm() {
                 setLocalError('');
                 if (clearError) clearError();
               }}
-              className={`flex-1 py-3 px-4 rounded-xl font-medium transition-all duration-300 ${
+              className={`flex-1 py-4 px-6 rounded-xl font-semibold transition-all duration-300 ${
                 isLogin 
-                  ? 'bg-white shadow-lg text-blue-600' 
+                  ? 'bg-white shadow-lg text-purple-600' 
                   : 'text-gray-600 hover:text-gray-800'
               }`}
             >
@@ -260,9 +304,9 @@ export function LoginForm() {
                 setLocalError('');
                 if (clearError) clearError();
               }}
-              className={`flex-1 py-3 px-4 rounded-xl font-medium transition-all duration-300 ${
+              className={`flex-1 py-4 px-6 rounded-xl font-semibold transition-all duration-300 ${
                 !isLogin 
-                  ? 'bg-white shadow-lg text-blue-600' 
+                  ? 'bg-white shadow-lg text-purple-600' 
                   : 'text-gray-600 hover:text-gray-800'
               }`}
             >
@@ -284,7 +328,7 @@ export function LoginForm() {
             )}
           </AnimatePresence>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-6">
             <AnimatePresence mode="wait">
               {!isLogin && (
                 <motion.div
@@ -293,7 +337,7 @@ export function LoginForm() {
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
                   transition={{ duration: 0.3 }}
-                  className="space-y-4"
+                  className="space-y-4 overflow-hidden"
                 >
                   <div className="relative">
                     <User className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -302,7 +346,7 @@ export function LoginForm() {
                       placeholder="Full Name"
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="w-full pl-12 pr-4 py-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white/50"
+                      className="w-full pl-12 pr-4 py-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 bg-white"
                       required={!isLogin}
                       disabled={loading}
                     />
@@ -315,7 +359,7 @@ export function LoginForm() {
                       placeholder="Phone Number"
                       value={formData.phone}
                       onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      className="w-full pl-12 pr-4 py-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white/50"
+                      className="w-full pl-12 pr-4 py-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 bg-white"
                       required={!isLogin}
                       disabled={loading}
                     />
@@ -328,7 +372,7 @@ export function LoginForm() {
                       placeholder="Church Name"
                       value={formData.church}
                       onChange={(e) => setFormData({ ...formData, church: e.target.value })}
-                      className="w-full pl-12 pr-4 py-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white/50"
+                      className="w-full pl-12 pr-4 py-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 bg-white"
                       required={!isLogin}
                       disabled={loading}
                     />
@@ -337,7 +381,7 @@ export function LoginForm() {
                   <select
                     value={formData.role}
                     onChange={(e) => setFormData({ ...formData, role: e.target.value as 'member' | 'admin' | 'pastor' })}
-                    className="w-full px-4 py-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white/50"
+                    className="w-full px-4 py-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 bg-white appearance-none"
                     disabled={loading}
                   >
                     <option value="member">Church Member</option>
@@ -356,7 +400,7 @@ export function LoginForm() {
                 placeholder="Email Address"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="w-full pl-12 pr-4 py-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white/50"
+                className="w-full pl-12 pr-4 py-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 bg-white"
                 required
                 disabled={loading}
               />
@@ -370,7 +414,7 @@ export function LoginForm() {
                 placeholder="Password"
                 value={formData.password}
                 onChange={(e) => handlePasswordChange(e.target.value)}
-                className="w-full pl-12 pr-12 py-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white/50"
+                className="w-full pl-12 pr-12 py-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 bg-white"
                 required
                 minLength={8}
                 disabled={loading}
@@ -392,7 +436,7 @@ export function LoginForm() {
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
-                  className="relative"
+                  className="relative overflow-hidden"
                 >
                   <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                   <input
@@ -400,8 +444,8 @@ export function LoginForm() {
                     placeholder="Confirm Password"
                     value={formData.confirmPassword}
                     onChange={(e) => handleConfirmPasswordChange(e.target.value)}
-                    className={`w-full pl-12 pr-12 py-4 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white/50 ${
-                      !passwordMatch && formData.confirmPassword ? 'border-red-300' : 'border-gray-200'
+                    className={`w-full pl-12 pr-12 py-4 border rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 bg-white ${
+                      !passwordMatch && formData.confirmPassword ? 'border-red-300' : 'border-gray-300'
                     }`}
                     required={!isLogin}
                     disabled={loading}
@@ -436,9 +480,9 @@ export function LoginForm() {
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
-                  className="p-4 bg-blue-50 rounded-xl space-y-2 border border-blue-100"
+                  className="p-4 bg-purple-50 rounded-xl space-y-2 border border-purple-100 overflow-hidden"
                 >
-                  <p className="text-sm font-medium text-blue-900">Password Requirements:</p>
+                  <p className="text-sm font-medium text-purple-900">Password Requirements:</p>
                   <PasswordRequirement met={passwordStrength.hasMinLength} text="At least 8 characters" />
                   <PasswordRequirement met={passwordStrength.hasUpperCase} text="One uppercase letter" />
                   <PasswordRequirement met={passwordStrength.hasLowerCase} text="One lowercase letter" />
@@ -454,26 +498,28 @@ export function LoginForm() {
               disabled={loading}
               whileHover={{ scale: loading ? 1 : 1.02 }}
               whileTap={{ scale: loading ? 1 : 0.98 }}
-              className="w-full bg-gradient-to-r from-blue-600 to-indigo-700 text-white py-4 px-4 rounded-xl font-semibold hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center relative overflow-hidden"
+              className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-4 px-6 rounded-xl font-semibold hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 group relative overflow-hidden"
             >
-              <div className="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-              
-              {loading ? (
-                <>
-                  <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                    className="w-5 h-5 border-2 border-white border-t-transparent rounded-full mr-3"
-                  />
-                  <span className="relative z-10">
-                    {isLogin ? 'Signing In...' : 'Creating Account...'}
-                  </span>
-                </>
-              ) : (
-                <span className="relative z-10">
-                  {isLogin ? 'Sign In' : 'Create Account'}
-                </span>
+              <span className="relative z-10">
+                {loading ? (isLogin ? 'Signing In...' : 'Creating Account...') : (isLogin ? 'Sign In' : 'Create Account')}
+              </span>
+              {!loading && (
+                <motion.div
+                  initial={{ x: -5 }}
+                  animate={{ x: 0 }}
+                  className="relative z-10"
+                >
+                  <ArrowRight className="w-5 h-5" />
+                </motion.div>
               )}
+              {loading && (
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
+                />
+              )}
+              <div className="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
             </motion.button>
           </form>
 
@@ -481,15 +527,25 @@ export function LoginForm() {
             <div className="mt-6 text-center">
               <button 
                 type="button" 
-                className="text-blue-600 hover:text-blue-800 hover:underline text-sm transition-colors font-medium"
+                className="text-purple-600 hover:text-purple-800 hover:underline text-sm transition-colors font-medium"
                 disabled={loading}
               >
                 Forgot your password?
               </button>
             </div>
           )}
-        </div>
-      </motion.div>
+
+          {/* Footer */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.6 }}
+            className="mt-8 text-center text-gray-500 text-sm"
+          >
+            <p>By continuing, you agree to our Terms of Service and Privacy Policy</p>
+          </motion.div>
+        </motion.div>
+      </div>
     </div>
   );
 }

@@ -1,53 +1,94 @@
-// src/app/dashboard/page.tsx (Enhanced)
 'use client';
 import { motion } from 'framer-motion';
-import { TrendingUp, Users, DollarSign, Calendar, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { TrendingUp, Users, DollarSign, Calendar, ArrowUpRight, ArrowDownRight, Heart, Target, BarChart3 } from 'lucide-react';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { useAuth } from '@/context/AuthContext';
+import { useRouter } from 'next/navigation';
 
 export default function Dashboard() {
   const { user } = useAuth();
+  const router = useRouter();
 
   const stats = [
     { 
       icon: DollarSign, 
-      label: "Total Given", 
+      label: "Total Contributions", 
       value: "$1,250", 
       change: "+12%",
       trend: 'up',
-      description: "Lifetime contributions"
+      description: "Lifetime giving",
+      color: "from-purple-500 to-pink-500",
+      bgColor: "bg-gradient-to-br from-purple-50 to-pink-50",
+      borderColor: "border-purple-100"
     },
     { 
       icon: Calendar, 
-      label: "This Month", 
+      label: "Monthly Giving", 
       value: "$150", 
       change: "+5%",
       trend: 'up',
-      description: "October 2024"
+      description: "October 2024",
+      color: "from-blue-500 to-cyan-500",
+      bgColor: "bg-gradient-to-br from-blue-50 to-cyan-50",
+      borderColor: "border-blue-100"
     },
     { 
       icon: TrendingUp, 
-      label: "Growth", 
+      label: "Growth Rate", 
       value: "24%", 
       change: "+8%",
       trend: 'up',
-      description: "Year over year"
+      description: "Year over year",
+      color: "from-emerald-500 to-green-500",
+      bgColor: "bg-gradient-to-br from-emerald-50 to-green-50",
+      borderColor: "border-emerald-100"
     },
     { 
       icon: Users, 
-      label: "Community", 
+      label: "Community Impact", 
       value: "156", 
       change: "+3%",
       trend: 'up',
-      description: "Active members"
+      description: "Active members",
+      color: "from-amber-500 to-orange-500",
+      bgColor: "bg-gradient-to-br from-amber-50 to-orange-50",
+      borderColor: "border-amber-100"
     }
   ];
 
   const recentActivities = [
-    { type: 'Tithe', amount: '$50', date: '2 hours ago', status: 'completed' },
-    { type: 'Offering', amount: '$25', date: '1 day ago', status: 'completed' },
-    { type: 'Building Fund', amount: '$100', date: '3 days ago', status: 'completed' },
+    { 
+      type: 'Tithe', 
+      amount: '$50', 
+      date: '2 hours ago', 
+      status: 'completed',
+      icon: DollarSign,
+      color: "text-purple-600",
+      bgColor: "bg-purple-100"
+    },
+    { 
+      type: 'Offering', 
+      amount: '$25', 
+      date: '1 day ago', 
+      status: 'completed',
+      icon: Heart,
+      color: "text-pink-600",
+      bgColor: "bg-pink-100"
+    },
+    { 
+      type: 'Building Fund', 
+      amount: '$100', 
+      date: '3 days ago', 
+      status: 'completed',
+      icon: Target,
+      color: "text-blue-600",
+      bgColor: "bg-blue-100"
+    },
   ];
+
+  const handleNavigation = (path: string) => {
+    router.push(path);
+  };
 
   return (
     <ProtectedRoute>
@@ -55,19 +96,30 @@ export default function Dashboard() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
-        className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 p-6"
+        className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-6 font-sans"
       >
         <div className="max-w-7xl mx-auto">
           {/* Header */}
           <motion.div
             initial={{ y: -20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            className="mb-8"
+            className="mb-8 text-center lg:text-left"
           >
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-700 bg-clip-text text-transparent mb-2">
+            <motion.h1
+              initial={{ scale: 0.9 }}
+              animate={{ scale: 1 }}
+              className="text-5xl lg:text-6xl font-black bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-4 tracking-tight"
+            >
               Welcome back, {user?.full_name?.split(' ')[0] || 'Friend'}! 👋
-            </h1>
-            <p className="text-gray-600 text-lg">Here's your giving overview and spiritual journey</p>
+            </motion.h1>
+            <motion.p
+              initial={{ y: 10, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.2 }}
+              className="text-xl text-gray-700 font-medium max-w-2xl mx-auto lg:mx-0"
+            >
+              Your <span className="font-bold text-indigo-600">Generosity Journey</span> and <span className="font-bold text-purple-600">Spiritual Growth</span> Overview
+            </motion.p>
           </motion.div>
 
           {/* Stats Grid */}
@@ -75,78 +127,112 @@ export default function Dashboard() {
             {stats.map((stat, index) => (
               <motion.div
                 key={stat.label}
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: index * 0.1 }}
-                whileHover={{ y: -5 }}
-                className="bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-lg border border-white/20 hover:shadow-xl transition-all duration-300"
+                initial={{ y: 30, opacity: 0, scale: 0.9 }}
+                animate={{ y: 0, opacity: 1, scale: 1 }}
+                transition={{ 
+                  delay: index * 0.1,
+                  type: "spring",
+                  stiffness: 100
+                }}
+                whileHover={{ 
+                  y: -8,
+                  scale: 1.02,
+                  transition: { type: "spring", stiffness: 300 }
+                }}
+                className={`${stat.bgColor} backdrop-blur-sm p-6 rounded-3xl shadow-xl border-2 ${stat.borderColor} hover:shadow-2xl transition-all duration-500 group`}
               >
                 <div className="flex items-center justify-between mb-4">
-                  <div className="p-3 bg-blue-100 rounded-xl">
-                    <stat.icon className="w-6 h-6 text-blue-600" />
-                  </div>
-                  <div className={`p-1 rounded-lg ${
-                    stat.trend === 'up' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
-                  }`}>
+                  <motion.div
+                    whileHover={{ rotate: 360 }}
+                    transition={{ duration: 0.6 }}
+                    className={`p-4 rounded-2xl bg-gradient-to-r ${stat.color} shadow-lg group-hover:shadow-xl`}
+                  >
+                    <stat.icon className="w-6 h-6 text-white" />
+                  </motion.div>
+                  <motion.div
+                    whileHover={{ scale: 1.2 }}
+                    className={`p-2 rounded-xl ${
+                      stat.trend === 'up' ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600'
+                    } shadow-sm`}
+                  >
                     {stat.trend === 'up' ? 
                       <ArrowUpRight className="w-4 h-4" /> : 
                       <ArrowDownRight className="w-4 h-4" />
                     }
-                  </div>
+                  </motion.div>
                 </div>
                 
                 <div>
-                  <p className="text-gray-600 text-sm font-medium mb-1">{stat.label}</p>
-                  <p className="text-2xl font-bold text-gray-900 mb-1">{stat.value}</p>
+                  <p className="text-gray-600 text-sm font-semibold mb-2 tracking-wide uppercase">{stat.label}</p>
+                  <motion.p 
+                    className="text-3xl font-black text-gray-900 mb-2"
+                    whileHover={{ scale: 1.05 }}
+                  >
+                    {stat.value}
+                  </motion.p>
                   <div className="flex items-center justify-between">
-                    <span className={`text-sm font-medium ${
-                      stat.trend === 'up' ? 'text-green-600' : 'text-red-600'
+                    <span className={`text-sm font-bold ${
+                      stat.trend === 'up' ? 'text-emerald-600' : 'text-rose-600'
                     }`}>
                       {stat.change}
                     </span>
-                    <span className="text-xs text-gray-500">{stat.description}</span>
+                    <span className="text-xs text-gray-600 font-medium">{stat.description}</span>
                   </div>
                 </div>
               </motion.div>
             ))}
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Recent Activity */}
             <motion.div
-              initial={{ x: -20, opacity: 0 }}
+              initial={{ x: -30, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
-              transition={{ delay: 0.4 }}
-              className="lg:col-span-2 bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-6"
+              transition={{ delay: 0.4, type: "spring" }}
+              className="lg:col-span-2 bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl border-2 border-white/30 p-8"
             >
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold text-gray-900">Recent Activity</h2>
-                <button className="text-blue-600 hover:text-blue-800 text-sm font-medium">
+              <div className="flex items-center justify-between mb-8">
+                <h2 className="text-2xl font-black bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
+                  Recent Transactions
+                </h2>
+                <motion.button 
+                  onClick={() => handleNavigation('/giving-history')}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white py-2 px-4 rounded-xl font-bold hover:shadow-lg transition-all duration-300"
+                >
                   View All
-                </button>
+                </motion.button>
               </div>
               
               <div className="space-y-4">
                 {recentActivities.map((activity, index) => (
                   <motion.div
                     key={index}
-                    initial={{ opacity: 0, x: -10 }}
+                    initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.5 + index * 0.1 }}
-                    className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
+                    whileHover={{ 
+                      x: 5,
+                      backgroundColor: "rgba(255, 255, 255, 0.8)"
+                    }}
+                    className="flex items-center justify-between p-5 bg-white/50 rounded-2xl border border-gray-100 hover:border-gray-200 transition-all duration-300 group"
                   >
                     <div className="flex items-center space-x-4">
-                      <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                        <DollarSign className="w-5 h-5 text-green-600" />
-                      </div>
+                      <motion.div 
+                        className={`w-12 h-12 ${activity.bgColor} rounded-xl flex items-center justify-center shadow-md group-hover:shadow-lg transition-shadow`}
+                        whileHover={{ scale: 1.1 }}
+                      >
+                        <activity.icon className={`w-6 h-6 ${activity.color}`} />
+                      </motion.div>
                       <div>
-                        <p className="font-medium text-gray-900">{activity.type}</p>
-                        <p className="text-sm text-gray-500">{activity.date}</p>
+                        <p className="font-bold text-gray-900 text-lg">{activity.type}</p>
+                        <p className="text-sm text-gray-600 font-medium">{activity.date}</p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-semibold text-gray-900">{activity.amount}</p>
-                      <span className="inline-block px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">
+                      <p className="font-black text-gray-900 text-lg">{activity.amount}</p>
+                      <span className="inline-block px-3 py-1 text-xs bg-emerald-100 text-emerald-800 font-bold rounded-full shadow-sm">
                         {activity.status}
                       </span>
                     </div>
@@ -155,53 +241,101 @@ export default function Dashboard() {
               </div>
             </motion.div>
 
-            {/* Quick Actions */}
+            {/* Quick Actions & Spiritual Section */}
             <motion.div
-              initial={{ x: 20, opacity: 0 }}
+              initial={{ x: 30, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
-              transition={{ delay: 0.6 }}
-              className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-6"
+              transition={{ delay: 0.6, type: "spring" }}
+              className="space-y-6"
             >
-              <h2 className="text-xl font-semibold text-gray-900 mb-6">Quick Actions</h2>
-              
-              <div className="space-y-4">
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="w-full bg-blue-600 text-white py-3 px-4 rounded-xl font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2"
-                >
-                  <DollarSign className="w-5 h-5" />
-                  <span>Make a Payment</span>
-                </motion.button>
+              {/* Quick Actions */}
+              <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl border-2 border-white/30 p-8">
+                <h2 className="text-2xl font-black bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent mb-6">
+                  Quick Actions
+                </h2>
                 
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="w-full border border-gray-300 text-gray-700 py-3 px-4 rounded-xl font-semibold hover:bg-gray-50 transition-colors flex items-center justify-center space-x-2"
-                >
-                  <Calendar className="w-5 h-5" />
-                  <span>View History</span>
-                </motion.button>
-                
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="w-full border border-gray-300 text-gray-700 py-3 px-4 rounded-xl font-semibold hover:bg-gray-50 transition-colors flex items-center justify-center space-x-2"
-                >
-                  <Users className="w-5 h-5" />
-                  <span>My Profile</span>
-                </motion.button>
+                <div className="space-y-4">
+                  <motion.button
+                    onClick={() => handleNavigation('/give')}
+                    whileHover={{ 
+                      scale: 1.03,
+                      y: -2
+                    }}
+                    whileTap={{ scale: 0.97 }}
+                    className="w-full bg-gradient-to-r from-indigo-600 to-purple-700 text-white py-4 px-6 rounded-2xl font-black text-lg hover:shadow-2xl transition-all duration-300 flex items-center justify-center space-x-3 shadow-lg"
+                  >
+                    <DollarSign className="w-6 h-6" />
+                    <span>Make a Donation</span>
+                  </motion.button>
+                  
+                  <motion.button
+                    onClick={() => handleNavigation('/giving-history')}
+                    whileHover={{ 
+                      scale: 1.03,
+                      y: -2
+                    }}
+                    whileTap={{ scale: 0.97 }}
+                    className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 text-white py-4 px-6 rounded-2xl font-black text-lg hover:shadow-2xl transition-all duration-300 flex items-center justify-center space-x-3 shadow-lg"
+                  >
+                    <BarChart3 className="w-6 h-6" />
+                    <span>Giving History</span>
+                  </motion.button>
+                  
+                  <motion.button
+                    onClick={() => handleNavigation('/profile')}
+                    whileHover={{ 
+                      scale: 1.03,
+                      y: -2
+                    }}
+                    whileTap={{ scale: 0.97 }}
+                    className="w-full bg-gradient-to-r from-emerald-500 to-green-600 text-white py-4 px-6 rounded-2xl font-black text-lg hover:shadow-2xl transition-all duration-300 flex items-center justify-center space-x-3 shadow-lg"
+                  >
+                    <Users className="w-6 h-6" />
+                    <span>Account Settings</span>
+                  </motion.button>
+                </div>
               </div>
 
               {/* Spiritual Quote */}
-              <div className="mt-8 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100">
-                <p className="text-sm text-gray-700 italic">
-                  "Each of you should give what you have decided in your heart to give, not reluctantly or under compulsion, for God loves a cheerful giver."
-                </p>
-                <p className="text-xs text-gray-500 mt-2">- 2 Corinthians 9:7</p>
-              </div>
+              <motion.div
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.8 }}
+                className="p-6 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-3xl shadow-2xl border-2 border-white/30"
+              >
+                <div className="text-white">
+                  <motion.p
+                    whileHover={{ scale: 1.02 }}
+                    className="text-lg font-semibold italic mb-4 leading-relaxed"
+                  >
+                    "Each of you should give what you have decided in your heart to give, not reluctantly or under compulsion, for God loves a cheerful giver."
+                  </motion.p>
+                  <div className="flex items-center justify-between">
+                    <p className="text-indigo-100 font-bold text-sm">- 2 Corinthians 9:7</p>
+                    <motion.div
+                      whileHover={{ rotate: 360 }}
+                      transition={{ duration: 0.8 }}
+                      className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center"
+                    >
+                      <Heart className="w-4 h-4 text-white" />
+                    </motion.div>
+                  </div>
+                </div>
+              </motion.div>
             </motion.div>
           </div>
+
+          {/* Bottom Decorative Element */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1 }}
+            className="text-center mt-12"
+          >
+            <p className="text-gray-500 font-medium text-sm">
+              Your generosity makes a difference • Blessed to be a blessing
+            </p>
+          </motion.div>
         </div>
       </motion.div>
     </ProtectedRoute>
