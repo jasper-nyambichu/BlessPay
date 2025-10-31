@@ -40,3 +40,40 @@ html {
 ::-webkit-scrollbar-thumb:hover {
   background: #002366;
 }
+/* Embla Carousel Base Styles */
+.embla {
+  max-width: 72rem;
+  margin: auto;
+  --slide-height: 8rem;
+  --slide-spacing: 1rem;
+  --slide-size: 25%;
+}
+
+.embla__viewport {
+  overflow: hidden;
+}
+
+.embla__container {
+  backface-visibility: hidden;
+  display: flex;
+  touch-action: pan-y;
+  margin-left: calc(var(--slide-spacing) * -1);
+}
+
+.embla__slide {
+  flex: 0 0 var(--slide-size);
+  min-width: 0;
+  padding-left: var(--slide-spacing);
+}
+
+@media (max-width: 768px) {
+  .embla {
+    --slide-size: 50%;
+  }
+}
+
+@media (max-width: 480px) {
+  .embla {
+    --slide-size: 80%;
+  }
+}
