@@ -375,22 +375,7 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* Storage Help Section */}
-        <div className="mt-8 bg-yellow-50 border border-yellow-200 rounded-lg p-6">
-          <h3 className="text-lg font-medium text-yellow-800 mb-2">Storage Setup Required</h3>
-          <p className="text-yellow-700 text-sm mb-4">
-            To enable cloud storage for profile pictures, please create a storage bucket in Supabase:
-          </p>
-          <ol className="text-yellow-700 text-sm list-decimal list-inside space-y-1">
-            <li>Go to your Supabase Dashboard</li>
-            <li>Navigate to <strong>Storage</strong> → <strong>Create Bucket</strong></li>
-            <li>Name it <code className="bg-yellow-100 px-1 rounded">profiles</code></li>
-            <li>Set it to <strong>Public</strong></li>
-          </ol>
-          <p className="text-yellow-700 text-sm mt-3">
-            <strong>Note:</strong> Currently using local storage as fallback. Images will only be available on this device.
-          </p>
-        </div>
+        
       </div>
     </motion.div>
   );

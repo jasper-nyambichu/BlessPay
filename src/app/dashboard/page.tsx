@@ -110,7 +110,7 @@ export default function Dashboard() {
               animate={{ scale: 1 }}
               className="text-5xl lg:text-6xl font-black bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-4 tracking-tight"
             >
-              Welcome back, {user?.full_name?.split(' ')[0] || 'Friend'}! 👋
+              Welcome back, {user?.full_name?.split(' ')[0] || 'Friend'}! 
             </motion.h1>
             <motion.p
               initial={{ y: 10, opacity: 0 }}
@@ -196,7 +196,7 @@ export default function Dashboard() {
                   Recent Transactions
                 </h2>
                 <motion.button 
-                  onClick={() => handleNavigation('/giving-history')}
+                  onClick={() => handleNavigation('/history')}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white py-2 px-4 rounded-xl font-bold hover:shadow-lg transition-all duration-300"
@@ -256,7 +256,7 @@ export default function Dashboard() {
                 
                 <div className="space-y-4">
                   <motion.button
-                    onClick={() => handleNavigation('/give')}
+                    onClick={() => handleNavigation('/payments')}
                     whileHover={{ 
                       scale: 1.03,
                       y: -2
@@ -269,7 +269,7 @@ export default function Dashboard() {
                   </motion.button>
                   
                   <motion.button
-                    onClick={() => handleNavigation('/giving-history')}
+                    onClick={() => handleNavigation('/history')}
                     whileHover={{ 
                       scale: 1.03,
                       y: -2
