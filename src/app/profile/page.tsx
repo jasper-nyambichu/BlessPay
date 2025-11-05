@@ -4,6 +4,8 @@ import { useAuth } from '@/context/AuthContext';
 import { motion } from 'framer-motion';
 import { User, Camera, Save, Mail, Phone, Church, Shield, AlertCircle } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import ProtectedRoute from '@/components/ProtectedRoute';
+import AuthenticatedLayout from '@/components/layout/AuthenticatedLayout';
 
 export default function ProfilePage() {
   const { user, updateProfile } = useAuth();
@@ -189,6 +191,8 @@ export default function ProfilePage() {
   }
 
   return (
+    <ProtectedRoute>
+    <AuthenticatedLayout>
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
@@ -378,5 +382,7 @@ export default function ProfilePage() {
         
       </div>
     </motion.div>
+    </AuthenticatedLayout>
+    </ProtectedRoute>
   );
 }

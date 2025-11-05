@@ -1,3 +1,4 @@
+/* src/app/globals.css */
 @import "tailwindcss";
 
 :root {
@@ -40,6 +41,52 @@ html {
 ::-webkit-scrollbar-thumb:hover {
   background: #002366;
 }
+
+/* Sidebar-specific scrollbar */
+.sidebar-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sidebar-scrollbar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+.sidebar-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
+}
+
+.sidebar-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* Ensure proper height for layout */
+html, body {
+  height: 100%;
+}
+
+#__next {
+  height: 100%;
+}
+
+/* Mobile overlay animation */
+.mobile-overlay {
+  backdrop-filter: blur(4px);
+}
+
+/* Smooth sidebar transitions */
+.sidebar-transition {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Backdrop blur support for older browsers */
+@supports not (backdrop-filter: blur(10px)) {
+  .backdrop-blur-lg {
+    background-color: rgba(255, 255, 255, 0.95);
+  }
+}
+
 /* Embla Carousel Base Styles */
 .embla {
   max-width: 72rem;
@@ -75,5 +122,17 @@ html {
 @media (max-width: 480px) {
   .embla {
     --slide-size: 80%;
+  }
+}
+
+/* Print styles */
+@media print {
+  .sidebar, .top-header {
+    display: none !important;
+  }
+  
+  .main-content {
+    margin-left: 0 !important;
+    width: 100% !important;
   }
 }

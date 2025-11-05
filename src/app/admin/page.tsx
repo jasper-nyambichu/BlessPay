@@ -2,10 +2,12 @@
 'use client';
 import { motion } from 'framer-motion';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import AuthenticatedLayout from '@/components/layout/AuthenticatedLayout';
 
 export default function Admin() {
   return (
     <ProtectedRoute requiredRole="admin">
+      <AuthenticatedLayout>
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -82,6 +84,7 @@ export default function Admin() {
           </motion.div>
         </div>
       </motion.div>
+      </AuthenticatedLayout>
     </ProtectedRoute>
   );
 }

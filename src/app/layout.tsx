@@ -1,3 +1,4 @@
+// src/app/layout.tsx (UPDATED)
 'use client';
 import { AuthProvider } from '@/context/AuthContext';
 import { NotificationProvider } from '@/context/NotificationContext';
@@ -5,8 +6,8 @@ import { NotificationContainer } from '@/components/ui/Notification';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import './globals.css';
-
 import { useNotification } from '@/context/NotificationContext';
+import { useAuth } from '@/context/AuthContext';
 
 function NotificationWrapper() {
   const { notifications, removeNotification } = useNotification();
@@ -31,7 +32,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="flex flex-col min-h-screen">
+      <body className="flex flex-col min-h-screen bg-gray-50">
         <AppProviders>
           <Navbar />
           <main className="flex-grow">

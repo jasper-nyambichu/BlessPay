@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { PaymentForm } from '@/components/PaymentForm';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import AuthenticatedLayout from '@/components/layout/AuthenticatedLayout';
 
 export default function PaymentsPage() {
   const { user } = useAuth();
@@ -21,6 +22,7 @@ export default function PaymentsPage() {
 
   return (
     <ProtectedRoute>
+      <AuthenticatedLayout>
       <div className="container mx-auto p-6">
         <h1 className="text-3xl font-bold mb-6">Make a Payment</h1>
         
@@ -59,6 +61,7 @@ export default function PaymentsPage() {
           )}
         </div>
       </div>
+      </AuthenticatedLayout>
     </ProtectedRoute>
   );
 }
