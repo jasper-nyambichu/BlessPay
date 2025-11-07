@@ -7,7 +7,6 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import './globals.css';
 import { useNotification } from '@/context/NotificationContext';
-import { useAuth } from '@/context/AuthContext';
 
 function NotificationWrapper() {
   const { notifications, removeNotification } = useNotification();
@@ -32,7 +31,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="flex flex-col min-h-screen bg-gray-50">
+      <body className="flex flex-col min-h-screen bg-gradient-to-br from-blue-50 to-cyan-50">
         <AppProviders>
           <Navbar />
           <main className="flex-grow">

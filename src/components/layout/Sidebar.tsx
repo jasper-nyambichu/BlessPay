@@ -1,4 +1,4 @@
-// Updated Sidebar.tsx with better responsive handling
+// Updated Sidebar.tsx with Serene Blue & Gold theme
 'use client';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -108,13 +108,12 @@ const Sidebar = ({ isCollapsed, setIsCollapsed, isMobileOpen, setIsMobileOpen }:
         }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
         className={`
-          fixed md:relative h-full bg-gradient-to-b from-purple-600 via-purple-700 to-pink-600 
-          text-white z-50 flex flex-col shadow-2xl border-r border-purple-500/30
+          fixed md:relative h-full bg-gradient-to-b from-[#4facfe] via-[#00a8ff] to-[#00f2fe] 
+          text-white z-50 flex flex-col shadow-2xl border-r border-blue-400/30
         `}
       >
-        {/* Rest of your sidebar content remains the same */}
         {/* Sidebar Header */}
-        <div className="p-6 border-b border-purple-500/30">
+        <div className="p-6 border-b border-blue-400/30">
           <div className="flex items-center justify-between">
             <AnimatePresence mode="wait">
               {!isCollapsed ? (
@@ -129,9 +128,9 @@ const Sidebar = ({ isCollapsed, setIsCollapsed, isMobileOpen, setIsMobileOpen }:
                     whileHover={{ scale: 1.1, rotate: 5 }}
                     className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm"
                   >
-                    <Heart className="w-5 h-5" />
+                    <Heart className="w-5 h-5 text-white" />
                   </motion.div>
-                  <span className="text-xl font-bold bg-gradient-to-r from-white to-purple-100 bg-clip-text text-transparent">
+                  <span className="text-xl font-bold bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">
                     BlessPay
                   </span>
                 </motion.div>
@@ -143,7 +142,7 @@ const Sidebar = ({ isCollapsed, setIsCollapsed, isMobileOpen, setIsMobileOpen }:
                   exit={{ opacity: 0, scale: 0.8 }}
                   className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm mx-auto"
                 >
-                  <Heart className="w-5 h-5" />
+                  <Heart className="w-5 h-5 text-white" />
                 </motion.div>
               )}
             </AnimatePresence>
@@ -154,9 +153,9 @@ const Sidebar = ({ isCollapsed, setIsCollapsed, isMobileOpen, setIsMobileOpen }:
               className="hidden md:flex items-center justify-center w-8 h-8 rounded-lg hover:bg-white/10 backdrop-blur-sm transition-all duration-200"
             >
               {isCollapsed ? (
-                <ChevronRight className="w-4 h-4" />
+                <ChevronRight className="w-4 h-4 text-white" />
               ) : (
-                <ChevronLeft className="w-4 h-4" />
+                <ChevronLeft className="w-4 h-4 text-white" />
               )}
             </button>
           </div>
@@ -170,7 +169,7 @@ const Sidebar = ({ isCollapsed, setIsCollapsed, isMobileOpen, setIsMobileOpen }:
                 exit={{ opacity: 0, y: 10 }}
                 className="mt-6 flex items-center gap-3"
               >
-                <div className="w-12 h-12 rounded-full bg-gradient-to-r from-purple-400 to-pink-400 flex items-center justify-center shadow-lg border-2 border-white/30">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-r from-blue-400 to-cyan-400 flex items-center justify-center shadow-lg border-2 border-white/30">
                   {user?.avatar_url ? (
                     <img 
                       src={user.avatar_url} 
@@ -182,10 +181,10 @@ const Sidebar = ({ isCollapsed, setIsCollapsed, isMobileOpen, setIsMobileOpen }:
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold truncate">
+                  <p className="font-semibold truncate text-white">
                     {user?.full_name || 'User'}
                   </p>
-                  <span className="text-xs text-purple-200 bg-purple-500/30 px-2 py-1 rounded-full font-medium capitalize">
+                  <span className="text-xs text-blue-200 bg-blue-500/40 px-2 py-1 rounded-full font-medium capitalize">
                     {user?.role || 'member'}
                   </span>
                 </div>
@@ -212,7 +211,7 @@ const Sidebar = ({ isCollapsed, setIsCollapsed, isMobileOpen, setIsMobileOpen }:
                     flex items-center rounded-xl p-3 transition-all duration-200 group relative
                     ${active 
                       ? 'bg-white/20 text-white shadow-lg' 
-                      : 'text-purple-100 hover:bg-white/10 hover:text-white'
+                      : 'text-blue-100 hover:bg-white/10 hover:text-white'
                     }
                   `}
                 >
@@ -253,12 +252,12 @@ const Sidebar = ({ isCollapsed, setIsCollapsed, isMobileOpen, setIsMobileOpen }:
         </nav>
 
         {/* Logout Button */}
-        <div className="p-4 border-t border-purple-500/30">
+        <div className="p-4 border-t border-blue-400/30">
           <motion.button
             onClick={handleLogout}
             whileHover={{ x: isCollapsed ? 0 : 4 }}
             className={`
-              flex items-center w-full rounded-xl p-3 text-purple-100 hover:bg-red-500/20 
+              flex items-center w-full rounded-xl p-3 text-blue-100 hover:bg-red-500/20 
               hover:text-red-100 transition-all duration-200 group
             `}
           >

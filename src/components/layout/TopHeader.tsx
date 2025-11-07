@@ -1,10 +1,9 @@
-// src/components/layout/TopHeader.tsx
-'use client';
-import { motion } from 'framer-motion';
-import { Menu, Bell, Settings, User, LogOut, ChevronDown } from 'lucide-react';
-import { useAuth } from '@/context/AuthContext';
-import { useState, useRef, useEffect } from 'react';
-import { usePathname } from 'next/navigation';
+"use client";
+import { motion } from "framer-motion";
+import { Menu, Bell, Settings, User, LogOut, ChevronDown } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
+import { useState, useRef, useEffect } from "react";
+import { usePathname } from "next/navigation";
 
 interface TopHeaderProps {
   onMenuClick: () => void;
@@ -19,41 +18,44 @@ const TopHeader = ({ onMenuClick, sidebarCollapsed }: TopHeaderProps) => {
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsUserDropdownOpen(false);
       }
     }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const getPageTitle = () => {
     const routes: { [key: string]: string } = {
-      '/dashboard': 'Dashboard',
-      '/payments': 'Payments',
-      '/history': 'History',
-      '/profile': 'Profile',
-      '/settings': 'Settings',
-      '/notifications': 'Notifications',
-      '/admin': 'Admin Dashboard',
+      "/dashboard": "Dashboard",
+      "/payments": "Payments",
+      "/history": "History",
+      "/profile": "Profile",
+      "/settings": "Settings",
+      "/notifications": "Notifications",
+      "/admin": "Admin Dashboard",
     };
-    
+
     for (const [path, title] of Object.entries(routes)) {
       if (pathname.startsWith(path)) {
         return title;
       }
     }
-    
-    return 'Dashboard';
+
+    return "Dashboard";
   };
 
   const getBreadcrumbs = () => {
-    const pathSegments = pathname.split('/').filter(segment => segment);
+    const pathSegments = pathname.split("/").filter((segment) => segment);
     if (pathSegments.length <= 1) return [];
-    
+
     return pathSegments.map((segment, index) => ({
       name: segment.charAt(0).toUpperCase() + segment.slice(1),
-      path: '/' + pathSegments.slice(0, index + 1).join('/')
+      path: "/" + pathSegments.slice(0, index + 1).join("/"),
     }));
   };
 
@@ -63,7 +65,7 @@ const TopHeader = ({ onMenuClick, sidebarCollapsed }: TopHeaderProps) => {
     <motion.header
       initial={{ y: -20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      className="bg-white/80 backdrop-blur-lg border-b border-gray-200/50 sticky top-0 z-30"
+      className="glass-card-heavy border-b border-blue-200/30 sticky top-0 z-30"
     >
       <div className="flex items-center justify-between px-6 py-4">
         {/* Left Section */}
@@ -72,23 +74,29 @@ const TopHeader = ({ onMenuClick, sidebarCollapsed }: TopHeaderProps) => {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={onMenuClick}
-            className="p-2 rounded-xl hover:bg-gray-100 transition-colors md:hidden"
+            className="p-2 rounded-xl hover:bg-blue-100/50 transition-colors md:hidden"
           >
-            <Menu className="w-5 h-5 text-gray-600" />
+            <Menu className="w-5 h-5 text-blue-600" />
           </motion.button>
 
           <div className="flex flex-col">
-            <h1 className="text-2xl font-black bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
+            <h1 className="text-2xl font-black bg-gradient-to-r from-blue-800 to-cyan-600 bg-clip-text text-transparent">
               {getPageTitle()}
             </h1>
-            
+
             {breadcrumbs.length > 0 && (
-              <div className="flex items-center gap-1 text-sm text-gray-500 mt-1">
+              <div className="flex items-center gap-1 text-sm text-blue-600/70 mt-1">
                 <span>Dashboard</span>
                 {breadcrumbs.map((crumb, index) => (
                   <div key={crumb.path} className="flex items-center gap-1">
                     <span>/</span>
-                    <span className={index === breadcrumbs.length - 1 ? 'text-purple-600 font-medium' : ''}>
+                    <span
+                      className={
+                        index === breadcrumbs.length - 1
+                          ? "text-blue-600 font-medium"
+                          : "text-blue-500/60"
+                      }
+                    >
                       {crumb.name}
                     </span>
                   </div>
@@ -102,21 +110,27 @@ const TopHeader = ({ onMenuClick, sidebarCollapsed }: TopHeaderProps) => {
         <div className="flex items-center gap-4">
           {/* Notifications */}
           <motion.button
+            onClick={() => {
+              window.location.href = "/notifications";
+            }}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="p-2 rounded-xl hover:bg-gray-100 transition-colors relative"
+            className="p-2 rounded-xl hover:bg-blue-100/50 transition-colors relative"
           >
-            <Bell className="w-5 h-5 text-gray-600" />
+            <Bell className="w-5 h-5 text-blue-600" />
             <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white"></div>
           </motion.button>
 
           {/* Settings */}
           <motion.button
+            onClick={() => {
+              window.location.href = "/settings";
+            }}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="p-2 rounded-xl hover:bg-gray-100 transition-colors"
+            className="p-2 rounded-xl hover:bg-blue-100/50 transition-colors"
           >
-            <Settings className="w-5 h-5 text-gray-600" />
+            <Settings className="w-5 h-5 text-blue-600" />
           </motion.button>
 
           {/* User Dropdown */}
@@ -125,34 +139,34 @@ const TopHeader = ({ onMenuClick, sidebarCollapsed }: TopHeaderProps) => {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
-              className="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-100 transition-colors"
+              className="flex items-center gap-3 p-2 rounded-xl hover:bg-blue-100/50 transition-colors"
             >
-              <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-400 to-pink-400 flex items-center justify-center shadow-lg">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-400 to-cyan-400 flex items-center justify-center shadow-lg">
                 {user?.avatar_url ? (
-                  <img 
-                    src={user.avatar_url} 
-                    alt="Profile" 
-                    className="w-full h-full rounded-full object-cover border-2 border-white/30" 
+                  <img
+                    src={user.avatar_url}
+                    alt="Profile"
+                    className="w-full h-full rounded-full object-cover border-2 border-white/30"
                   />
                 ) : (
                   <User className="w-4 h-4 text-white" />
                 )}
               </div>
-              
+
               <div className="hidden sm:block text-left">
-                <p className="text-sm font-medium text-gray-900 truncate max-w-32">
+                <p className="text-sm font-medium text-blue-900 truncate max-w-32">
                   {user?.full_name || user?.email}
                 </p>
-                <p className="text-xs text-gray-500 capitalize">
-                  {user?.role || 'member'}
+                <p className="text-xs text-blue-600/70 capitalize">
+                  {user?.role || "member"}
                 </p>
               </div>
-              
+
               <motion.div
                 animate={{ rotate: isUserDropdownOpen ? 180 : 0 }}
                 transition={{ duration: 0.2 }}
               >
-                <ChevronDown className="w-4 h-4 text-gray-500" />
+                <ChevronDown className="w-4 h-4 text-blue-600" />
               </motion.div>
             </motion.button>
 
@@ -163,55 +177,55 @@ const TopHeader = ({ onMenuClick, sidebarCollapsed }: TopHeaderProps) => {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 10, scale: 0.95 }}
                 transition={{ duration: 0.2 }}
-                className="absolute right-0 mt-2 w-56 bg-white/95 backdrop-blur-lg rounded-xl shadow-2xl border border-gray-200/50 py-2 z-50"
+                className="absolute right-0 mt-2 w-56 glass-card-heavy rounded-xl shadow-2xl border border-blue-200/30 py-2 z-50"
               >
-                <div className="px-4 py-3 border-b border-gray-100">
-                  <p className="font-semibold text-gray-900 truncate">
-                    {user?.full_name || 'User'}
+                <div className="px-4 py-3 border-b border-blue-200/30">
+                  <p className="font-semibold text-blue-900 truncate">
+                    {user?.full_name || "User"}
                   </p>
-                  <p className="text-sm text-gray-600 truncate">
+                  <p className="text-sm text-blue-600/80 truncate">
                     {user?.email}
                   </p>
-                  <span className="inline-block mt-1 px-2 py-1 text-xs bg-purple-100 text-purple-800 rounded-full capitalize">
+                  <span className="inline-block mt-1 px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full capitalize">
                     {user?.role}
                   </span>
                 </div>
-                
-                <button 
+
+                <button
                   onClick={() => {
                     setIsUserDropdownOpen(false);
-                    window.location.href = '/profile';
+                    window.location.href = "/profile";
                   }}
-                  className="w-full flex items-center px-4 py-3 hover:bg-purple-50 transition-colors duration-200 group text-gray-700"
+                  className="w-full flex items-center px-4 py-3 hover:bg-blue-50/80 transition-colors duration-200 group text-blue-900"
                 >
-                  <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center mr-3 group-hover:bg-purple-200 transition-colors">
-                    <User className="w-4 h-4 text-purple-600" />
+                  <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center mr-3 group-hover:bg-blue-200 transition-colors">
+                    <User className="w-4 h-4 text-blue-600" />
                   </div>
                   <span>Profile</span>
                 </button>
-                
-                <button 
+
+                <button
                   onClick={() => {
                     setIsUserDropdownOpen(false);
-                    window.location.href = '/settings';
+                    window.location.href = "/settings";
                   }}
-                  className="w-full flex items-center px-4 py-3 hover:bg-purple-50 transition-colors duration-200 group text-gray-700"
+                  className="w-full flex items-center px-4 py-3 hover:bg-blue-50/80 transition-colors duration-200 group text-blue-900"
                 >
-                  <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center mr-3 group-hover:bg-purple-200 transition-colors">
-                    <Settings className="w-4 h-4 text-purple-600" />
+                  <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center mr-3 group-hover:bg-blue-200 transition-colors">
+                    <Settings className="w-4 h-4 text-blue-600" />
                   </div>
                   <span>Settings</span>
                 </button>
-                
-                <div className="border-t border-gray-100 my-2"></div>
-                
+
+                <div className="border-t border-blue-200/30 my-2"></div>
+
                 <motion.button
                   whileHover={{ x: 4 }}
                   onClick={() => {
                     setIsUserDropdownOpen(false);
                     logout();
                   }}
-                  className="w-full flex items-center px-4 py-3 hover:bg-red-50 transition-colors duration-200 group text-red-600"
+                  className="w-full flex items-center px-4 py-3 hover:bg-red-50/80 transition-colors duration-200 group text-red-600"
                 >
                   <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center mr-3 group-hover:bg-red-200 transition-colors">
                     <LogOut className="w-4 h-4" />

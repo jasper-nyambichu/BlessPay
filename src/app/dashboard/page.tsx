@@ -1,4 +1,3 @@
-// src/app/dashboard/page.tsx
 'use client';
 import { motion } from 'framer-motion';
 import { TrendingUp, Users, DollarSign, Calendar, ArrowUpRight, ArrowDownRight, Heart, Target, BarChart3 } from 'lucide-react';
@@ -19,9 +18,9 @@ function DashboardContent() {
       change: "+12%",
       trend: 'up',
       description: "Lifetime giving",
-      color: "from-purple-500 to-pink-500",
-      bgColor: "bg-gradient-to-br from-purple-50 to-pink-50",
-      borderColor: "border-purple-100"
+      color: "from-blue-500 to-cyan-500",
+      bgColor: "glass-card gradient-primary text-white",
+      borderColor: "border-blue-100"
     },
     { 
       icon: Calendar, 
@@ -30,9 +29,9 @@ function DashboardContent() {
       change: "+5%",
       trend: 'up',
       description: "October 2024",
-      color: "from-blue-500 to-cyan-500",
-      bgColor: "bg-gradient-to-br from-blue-50 to-cyan-50",
-      borderColor: "border-blue-100"
+      color: "from-cyan-500 to-blue-500",
+      bgColor: "glass-card gradient-secondary text-white",
+      borderColor: "border-cyan-100"
     },
     { 
       icon: TrendingUp, 
@@ -42,7 +41,7 @@ function DashboardContent() {
       trend: 'up',
       description: "Year over year",
       color: "from-emerald-500 to-green-500",
-      bgColor: "bg-gradient-to-br from-emerald-50 to-green-50",
+      bgColor: "glass-card bg-gradient-to-br from-emerald-50 to-green-50",
       borderColor: "border-emerald-100"
     },
     { 
@@ -52,8 +51,8 @@ function DashboardContent() {
       change: "+3%",
       trend: 'up',
       description: "Active members",
-      color: "from-amber-500 to-orange-500",
-      bgColor: "bg-gradient-to-br from-amber-50 to-orange-50",
+      color: "from-amber-500 to-yellow-500",
+      bgColor: "glass-card bg-gradient-to-br from-amber-50 to-yellow-50",
       borderColor: "border-amber-100"
     }
   ];
@@ -65,8 +64,8 @@ function DashboardContent() {
       date: '2 hours ago', 
       status: 'completed',
       icon: DollarSign,
-      color: "text-purple-600",
-      bgColor: "bg-purple-100"
+      color: "text-blue-600",
+      bgColor: "bg-blue-100"
     },
     { 
       type: 'Offering', 
@@ -74,8 +73,8 @@ function DashboardContent() {
       date: '1 day ago', 
       status: 'completed',
       icon: Heart,
-      color: "text-pink-600",
-      bgColor: "bg-pink-100"
+      color: "text-cyan-600",
+      bgColor: "bg-cyan-100"
     },
     { 
       type: 'Building Fund', 
@@ -83,8 +82,8 @@ function DashboardContent() {
       date: '3 days ago', 
       status: 'completed',
       icon: Target,
-      color: "text-blue-600",
-      bgColor: "bg-blue-100"
+      color: "text-indigo-600",
+      bgColor: "bg-indigo-100"
     },
   ];
 
@@ -97,7 +96,7 @@ function DashboardContent() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="min-h-full bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 font-sans"
+      className="min-h-full bg-gradient-to-br from-blue-50 via-cyan-50 to-indigo-100 font-sans"
     >
       <div className="max-w-7xl mx-auto">
         {/* Header */}
@@ -109,7 +108,7 @@ function DashboardContent() {
           <motion.h1
             initial={{ scale: 0.9 }}
             animate={{ scale: 1 }}
-            className="text-4xl lg:text-5xl font-black bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-4 tracking-tight"
+            className="text-4xl lg:text-5xl font-black bg-gradient-to-r from-blue-600 via-cyan-600 to-indigo-600 bg-clip-text text-transparent mb-4 tracking-tight"
           >
             Welcome back, {user?.full_name?.split(' ')[0] || 'Friend'}! 
           </motion.h1>
@@ -119,7 +118,7 @@ function DashboardContent() {
             transition={{ delay: 0.2 }}
             className="text-lg text-gray-700 font-medium max-w-2xl mx-auto lg:mx-0"
           >
-            Your <span className="font-bold text-indigo-600">Generosity Journey</span> and <span className="font-bold text-purple-600">Spiritual Growth</span> Overview
+            Your <span className="font-bold text-blue-600">Generosity Journey</span> and <span className="font-bold text-cyan-600">Spiritual Growth</span> Overview
           </motion.p>
         </motion.div>
 
@@ -140,7 +139,7 @@ function DashboardContent() {
                 scale: 1.02,
                 transition: { type: "spring", stiffness: 300 }
               }}
-              className={`${stat.bgColor} backdrop-blur-sm p-6 rounded-3xl shadow-xl border-2 ${stat.borderColor} hover:shadow-2xl transition-all duration-500 group`}
+              className={`${stat.bgColor} p-6 rounded-3xl shadow-2xl border-2 ${stat.borderColor} hover:shadow-3xl transition-all duration-500 group`}
             >
               <div className="flex items-center justify-between mb-4">
                 <motion.div
@@ -190,7 +189,7 @@ function DashboardContent() {
             initial={{ x: -30, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ delay: 0.4, type: "spring" }}
-            className="lg:col-span-2 bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl border-2 border-white/30 p-8"
+            className="lg:col-span-2 glass-card-heavy rounded-3xl shadow-2xl p-8"
           >
             <div className="flex items-center justify-between mb-8">
               <h2 className="text-2xl font-black bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
@@ -200,7 +199,7 @@ function DashboardContent() {
                 onClick={() => handleNavigation('/history')}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white py-2 px-4 rounded-xl font-bold hover:shadow-lg transition-all duration-300"
+                className="bg-gradient-to-r from-blue-500 to-cyan-600 text-white py-2 px-4 rounded-xl font-bold hover:shadow-lg transition-all duration-300"
               >
                 View All
               </motion.button>
@@ -250,7 +249,7 @@ function DashboardContent() {
             className="space-y-6"
           >
             {/* Quick Actions */}
-            <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl border-2 border-white/30 p-8">
+            <div className="glass-card-heavy rounded-3xl shadow-2xl p-8">
               <h2 className="text-2xl font-black bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent mb-6">
                 Quick Actions
               </h2>
@@ -263,7 +262,7 @@ function DashboardContent() {
                     y: -2
                   }}
                   whileTap={{ scale: 0.97 }}
-                  className="w-full bg-gradient-to-r from-indigo-600 to-purple-700 text-white py-4 px-6 rounded-2xl font-black text-lg hover:shadow-2xl transition-all duration-300 flex items-center justify-center space-x-3 shadow-lg"
+                  className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 text-white py-4 px-6 rounded-2xl font-black text-lg hover:shadow-2xl transition-all duration-300 flex items-center justify-center space-x-3 shadow-lg"
                 >
                   <DollarSign className="w-6 h-6" />
                   <span>Make a Donation</span>
@@ -289,7 +288,7 @@ function DashboardContent() {
                     y: -2
                   }}
                   whileTap={{ scale: 0.97 }}
-                  className="w-full bg-gradient-to-r from-emerald-500 to-green-600 text-white py-4 px-6 rounded-2xl font-black text-lg hover:shadow-2xl transition-all duration-300 flex items-center justify-center space-x-3 shadow-lg"
+                  className="w-full bg-gradient-to-r from-amber-500 to-yellow-600 text-white py-4 px-6 rounded-2xl font-black text-lg hover:shadow-2xl transition-all duration-300 flex items-center justify-center space-x-3 shadow-lg"
                 >
                   <Users className="w-6 h-6" />
                   <span>Account Settings</span>
@@ -302,7 +301,7 @@ function DashboardContent() {
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.8 }}
-              className="p-6 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-3xl shadow-2xl border-2 border-white/30"
+              className="p-6 bg-gradient-to-br from-blue-500 via-cyan-500 to-indigo-500 rounded-3xl shadow-2xl border-2 border-white/30"
             >
               <div className="text-white">
                 <motion.p
@@ -312,7 +311,7 @@ function DashboardContent() {
                   "Each of you should give what you have decided in your heart to give, not reluctantly or under compulsion, for God loves a cheerful giver."
                 </motion.p>
                 <div className="flex items-center justify-between">
-                  <p className="text-indigo-100 font-bold text-sm">- 2 Corinthians 9:7</p>
+                  <p className="text-blue-100 font-bold text-sm">- 2 Corinthians 9:7</p>
                   <motion.div
                     whileHover={{ rotate: 360 }}
                     transition={{ duration: 0.8 }}

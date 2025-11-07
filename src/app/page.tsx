@@ -1,7 +1,6 @@
-// src/app/page.tsx
 'use client';
 import { motion } from 'framer-motion';
-import { Shield, Zap, Heart, ArrowRight } from 'lucide-react';
+import { Shield, Zap, Heart, ArrowRight, Star, CheckCircle, Users, Church } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import Image from 'next/image';
@@ -33,22 +32,40 @@ export default function HomePage() {
     { name: 'SDA Church', image: '/images/partners/sda-removebg-preview.png' },
   ];
 
+  const features = [
+    {
+      icon: Shield,
+      title: "Bank-Level Security",
+      description: "Military-grade encryption ensures your offerings are protected with the highest security standards.",
+      gradient: "from-blue-500 to-cyan-500",
+      image: "/images/landing/SDA church in Wenchi honours 20 girls for staying chaste_ _Promoting good morals_.jpeg"
+    },
+    {
+      icon: Zap,
+      title: "Simple & Intuitive",
+      description: "User-friendly interface designed for all generations with step-by-step guidance and instant processing.",
+      gradient: "from-cyan-500 to-blue-500",
+      image: "/images/landing/africa.jpeg"
+    },
+    {
+      icon: Heart,
+      title: "Faith-Centered",
+      description: "Designed with biblical principles to support your spiritual journey and strengthen your community.",
+      gradient: "from-indigo-500 to-purple-500",
+      image: "/images/landing/hero-bg.jpg"
+    }
+  ];
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-100">
-      {/* Hero Section with Background Image */}
-      <section 
-        className="relative py-32 px-4 overflow-hidden"
-        style={{
-          backgroundImage: `linear-gradient(rgba(255, 255, 255, 0.26), rgba(255, 255, 255, 0.25)), url('/images/landing/dickson.jpg')`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundAttachment: 'fixed'
-        }}
-      >
-        {/* Animated background elements */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute -top-24 -right-24 w-96 h-96 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse"></div>
-          <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse delay-1000"></div>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-cyan-50 to-indigo-100">
+      {/* Modern Hero Section */}
+      <section className="relative min-h-screen flex items-center justify-center px-4 overflow-hidden">
+        {/* Animated Background */}
+        <div className="absolute inset-0">
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 via-cyan-600/10 to-indigo-600/10"></div>
+          <div className="absolute top-0 left-0 w-72 h-72 bg-blue-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
+          <div className="absolute top-0 right-0 w-72 h-72 bg-cyan-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
+          <div className="absolute -bottom-8 left-20 w-72 h-72 bg-indigo-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
         </div>
 
         <div className="container mx-auto max-w-6xl relative z-10">
@@ -58,39 +75,52 @@ export default function HomePage() {
             transition={{ duration: 0.8 }}
             className="text-center"
           >
-            
-            {/* <motion.div
+            {/* Logo/Brand */}
+            <motion.div
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.8, delay: 0.2 }}
-              className="mb-8"
+              className="mb-8 flex justify-center"
             >
-              <Image
-                src="/images/landing/hero-bg.jpg"
-                alt="BlessPay Logo"
-                width={200}
-                height={80}
-                className="mx-auto mb-6 rounded-lg shadow-lg"
-                priority
-              />
-            </motion.div> */}
+              <div className="w-20 h-20 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-2xl flex items-center justify-center shadow-2xl">
+                <Church className="w-10 h-10 text-white" />
+              </div>
+            </motion.div>
 
-            <h1 className="text-5xl md:text-7xl font-bold text-gray-900 mb-6 leading-tight">
-              Welcome to{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
-                BlessPay
+            {/* Main Heading */}
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.3 }}
+              className="text-5xl md:text-7xl lg:text-8xl font-black text-gray-900 mb-6 leading-tight"
+            >
+              Transform Your{' '}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-cyan-600 to-indigo-600">
+                Spiritual Giving
               </span>
-            </h1>
-            <p className="text-xl md:text-2xl text-gray-700 mb-8 max-w-3xl mx-auto leading-relaxed font-medium">
-              Transform your spiritual giving with our faith-inspired digital offering system 
-              designed for the Seventh-day Adventist community worldwide.
-            </p>
+            </motion.h1>
+
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.4 }}
+              className="text-xl md:text-2xl text-gray-700 mb-8 max-w-4xl mx-auto leading-relaxed font-medium"
+            >
+              Experience the future of faithful giving with our divine-inspired digital platform, 
+              designed specifically for the global Seventh-day Adventist community.
+            </motion.p>
             
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
+            {/* CTA Buttons */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.5 }}
+              className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16"
+            >
               {user ? (
                 <Link 
                   href="/dashboard"
-                  className="group bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-300 shadow-2xl hover:shadow-3xl flex items-center gap-3"
+                  className="group bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-300 shadow-2xl hover:shadow-3xl flex items-center gap-3 transform hover:-translate-y-1"
                 >
                   Go to Dashboard
                   <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -99,51 +129,71 @@ export default function HomePage() {
                 <>
                   <Link 
                     href="/signup"
-                    className="group bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-300 shadow-2xl hover:shadow-3xl flex items-center gap-3"
+                    className="group bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-300 shadow-2xl hover:shadow-3xl flex items-center gap-3 transform hover:-translate-y-1"
                   >
                     Start Giving Now
                     <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </Link>
                   <Link 
                     href="/login"
-                    className="group border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-300 shadow-lg hover:shadow-xl flex items-center gap-3"
+                    className="group glass-card border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-300 shadow-lg hover:shadow-xl flex items-center gap-3 transform hover:-translate-y-1"
                   >
                     Sign In
                     <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </Link>
                 </>
               )}
-            </div>
+            </motion.div>
 
             {/* Stats Bar */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.4 }}
-              className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-2xl mx-auto bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/20"
+              transition={{ duration: 0.8, delay: 0.6 }}
+              className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-2xl mx-auto glass-card rounded-2xl p-8 shadow-2xl border border-white/20"
             >
               <div className="text-center">
                 <div className="text-2xl md:text-3xl font-bold text-blue-600">10K+</div>
                 <div className="text-gray-600 text-sm">Faithful Members</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl md:text-3xl font-bold text-green-600">500+</div>
+                <div className="text-2xl md:text-3xl font-bold text-cyan-600">500+</div>
                 <div className="text-gray-600 text-sm">Churches</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl md:text-3xl font-bold text-purple-600">$5M+</div>
+                <div className="text-2xl md:text-3xl font-bold text-indigo-600">$5M+</div>
                 <div className="text-gray-600 text-sm">Offerings Processed</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl md:text-3xl font-bold text-orange-600">99.9%</div>
+                <div className="text-2xl md:text-3xl font-bold text-amber-600">99.9%</div>
                 <div className="text-gray-600 text-sm">Service Uptime</div>
               </div>
             </motion.div>
           </motion.div>
         </div>
+
+        {/* Scroll Indicator */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1, delay: 1 }}
+          className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
+        >
+          <motion.div
+            animate={{ y: [0, 10, 0] }}
+            transition={{ duration: 2, repeat: Infinity }}
+            className="w-6 h-10 border-2 border-blue-600 rounded-full flex justify-center"
+          >
+            <motion.div
+              animate={{ y: [0, 12, 0] }}
+              transition={{ duration: 2, repeat: Infinity }}
+              className="w-1 h-3 bg-blue-600 rounded-full mt-2"
+            />
+          </motion.div>
+        </motion.div>
       </section>
 
-      {/* Features Grid with Images */}
+      {/* Features Grid */}
       <section className="py-20 px-4 bg-gradient-to-b from-white to-blue-50">
         <div className="container mx-auto max-w-6xl">
           <motion.div
@@ -154,7 +204,7 @@ export default function HomePage() {
             className="text-center mb-16"
           >
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-              Why Choose BlessPay?
+              Why Choose <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-600">BlessPay</span>?
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               Experience the perfect blend of modern technology and spiritual commitment 
@@ -162,84 +212,32 @@ export default function HomePage() {
             </p>
           </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            viewport={{ once: true }}
-            className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20"
-          >
-            {/* Secure Feature Card */}
-            <div className="group bg-white p-8 rounded-3xl shadow-2xl border border-blue-100 text-center hover:shadow-3xl transition-all duration-500 hover:-translate-y-2">
-              <div className="relative mb-6">
-                <div className="w-32 h-32 mx-auto rounded-2xl overflow-hidden shadow-lg">
-                  <Image
-                    src="/images/landing/SDA church in Wenchi honours 20 girls for staying chaste_ _Promoting good morals_.jpeg"
-                    alt="Secure Payment Processing"
-                    width={128}
-                    height={128}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                  />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
+            {features.map((feature, index) => (
+              <motion.div
+                key={feature.title}
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: index * 0.2 }}
+                viewport={{ once: true }}
+                className="group glass-card p-8 rounded-3xl shadow-2xl text-center hover:shadow-3xl transition-all duration-500 hover:-translate-y-2"
+              >
+                <div className="relative mb-6">
+                  <div className="w-20 h-20 mx-auto rounded-2xl overflow-hidden shadow-lg mb-4">
+                    <div className={`w-full h-full bg-gradient-to-r ${feature.gradient} flex items-center justify-center`}>
+                      <feature.icon className="w-10 h-10 text-white" />
+                    </div>
+                  </div>
                 </div>
-                <div className="absolute -top-2 -right-2 bg-blue-600 text-white p-3 rounded-full shadow-lg">
-                  <Shield className="w-6 h-6" />
-                </div>
-              </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">Bank-Level Security</h3>
-              <p className="text-gray-600 text-lg leading-relaxed">
-                Military-grade encryption and secure payment processing ensure your 
-                offerings are protected with the highest security standards.
-              </p>
-            </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-4">{feature.title}</h3>
+                <p className="text-gray-600 text-lg leading-relaxed">
+                  {feature.description}
+                </p>
+              </motion.div>
+            ))}
+          </div>
 
-            {/* Simple Feature Card */}
-            <div className="group bg-white p-8 rounded-3xl shadow-2xl border border-green-100 text-center hover:shadow-3xl transition-all duration-500 hover:-translate-y-2">
-              <div className="relative mb-6">
-                <div className="w-32 h-32 mx-auto rounded-2xl overflow-hidden shadow-lg">
-                  <Image
-                    src="/images/landing/africa.jpeg"
-                    alt="Easy to Use Interface"
-                    width={128}
-                    height={128}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                  />
-                </div>
-                <div className="absolute -top-2 -right-2 bg-green-600 text-white p-3 rounded-full shadow-lg">
-                  <Zap className="w-6 h-6" />
-                </div>
-              </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">Simple & Intuitive</h3>
-              <p className="text-gray-600 text-lg leading-relaxed">
-                User-friendly interface designed for all generations with step-by-step 
-                guidance and instant payment processing.
-              </p>
-            </div>
-
-            {/* Spiritual Feature Card */}
-            <div className="group bg-white p-8 rounded-3xl shadow-2xl border border-purple-100 text-center hover:shadow-3xl transition-all duration-500 hover:-translate-y-2">
-              <div className="relative mb-6">
-                <div className="w-32 h-32 mx-auto rounded-2xl overflow-hidden shadow-lg">
-                  <Image
-                    src="/images/landing/hero-bg.jpg"
-                    alt="Spiritual Growth"
-                    width={128}
-                    height={128}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                  />
-                </div>
-                <div className="absolute -top-2 -right-2 bg-purple-600 text-white p-3 rounded-full shadow-lg">
-                  <Heart className="w-6 h-6" />
-                </div>
-              </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">Faith-Centered</h3>
-              <p className="text-gray-600 text-lg leading-relaxed">
-                Designed with biblical principles to support your spiritual journey 
-                and strengthen your church community through faithful giving.
-              </p>
-            </div>
-          </motion.div>
-
-          {/* Partner Carousel Section */}
+          {/* Partner Carousel */}
           <motion.div
             initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -255,7 +253,6 @@ export default function HomePage() {
               digital giving across our global community.
             </p>
 
-            {/* Embla Carousel */}
             <div className="embla overflow-hidden" ref={emblaRef}>
               <div className="embla__container flex">
                 {partnerLogos.map((partner, index) => (
@@ -263,14 +260,11 @@ export default function HomePage() {
                     key={index} 
                     className="embla__slide flex-[0_0_25%] min-w-0 pl-4"
                   >
-                    <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 h-32 flex items-center justify-center">
+                    <div className="glass-card rounded-2xl p-6 shadow-lg border border-white/20 hover:shadow-xl transition-all duration-300 h-32 flex items-center justify-center">
                       <div className="relative w-32 h-16">
-                        <Image
-                          src={partner.image}
-                          alt={partner.name}
-                          fill
-                          className="object-contain filter  transition-all duration-300"
-                        />
+                        <div className="w-full h-full flex items-center justify-center text-blue-600 font-bold text-lg">
+                          {partner.name.split(' ')[0]}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -281,8 +275,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20 px-4 bg-gradient-to-r from-blue-600 to-purple-700 text-white">
+      {/* Final CTA Section */}
+      <section className="py-20 px-4 bg-gradient-to-r from-blue-600 via-cyan-600 to-indigo-700 text-white">
         <div className="container mx-auto max-w-4xl text-center">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -301,7 +295,7 @@ export default function HomePage() {
               {user ? (
                 <Link 
                   href="/dashboard"
-                  className="bg-white text-blue-600 hover:bg-blue-50 px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-300 shadow-2xl hover:shadow-3xl flex items-center gap-3"
+                  className="bg-white text-blue-600 hover:bg-blue-50 px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-300 shadow-2xl hover:shadow-3xl flex items-center gap-3 transform hover:-translate-y-1"
                 >
                   Continue to Dashboard
                   <ArrowRight className="w-5 h-5" />
@@ -310,14 +304,14 @@ export default function HomePage() {
                 <>
                   <Link 
                     href="/signup"
-                    className="bg-white text-blue-600 hover:bg-blue-50 px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-300 shadow-2xl hover:shadow-3xl flex items-center gap-3"
+                    className="bg-white text-blue-600 hover:bg-blue-50 px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-300 shadow-2xl hover:shadow-3xl flex items-center gap-3 transform hover:-translate-y-1"
                   >
                     Create Free Account
                     <ArrowRight className="w-5 h-5" />
                   </Link>
                   <Link 
                     href="/about"
-                    className="border-2 border-white text-white hover:bg-white hover:text-blue-600 px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-300"
+                    className="border-2 border-white text-white hover:bg-white hover:text-blue-600 px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-300 transform hover:-translate-y-1"
                   >
                     Learn More
                   </Link>
