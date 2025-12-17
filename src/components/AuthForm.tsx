@@ -2,7 +2,7 @@
 
 import { User, Lock } from 'lucide-react';
 import { motion } from 'framer-motion';
-import Button from './ui/Button';
+import Button from './ui/button';
 import Input from './ui/Input';
 import LoadingSpinner from './ui/LoadingSpinner';
 

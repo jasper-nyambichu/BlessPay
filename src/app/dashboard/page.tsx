@@ -1,3 +1,4 @@
+//src/app/dashboard/page.tsx
 'use client';
 import { motion } from 'framer-motion';
 import { TrendingUp, Users, DollarSign, Calendar, ArrowUpRight, ArrowDownRight, Heart, Target, BarChart3 } from 'lucide-react';
