@@ -3,8 +3,6 @@
 import { AuthProvider } from '@/context/AuthContext';
 import { NotificationProvider } from '@/context/NotificationContext';
 import { NotificationContainer } from '@/components/ui/Notification';
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
 import { useNotification } from '@/context/NotificationContext';
 import './globals.css';
 
@@ -50,11 +48,7 @@ export default function RootLayout({
       </head>
       <body className="flex flex-col min-h-screen bg-background text-foreground antialiased">
         <AppProviders>
-          <Navbar />
-          <main className="flex-grow">
-            {children}
-          </main>
-          <Footer />
+          {children} {/* Navbar/Footer should NOT be here */}
         </AppProviders>
       </body>
     </html>

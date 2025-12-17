@@ -1,6 +1,7 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Church } from "lucide-react";
+import Link from "next/link";
 
 const HeroSection = () => {
   return (
@@ -46,13 +47,18 @@ const HeroSection = () => {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16 animate-fade-up animation-delay-400">
-            <Button variant="gold" size="xl" className="w-full sm:w-auto group">
-              Start Giving Now
-              <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-            </Button>
-            <Button variant="navy-outline" size="xl" className="w-full sm:w-auto">
-              Sign In
-            </Button>
+            <Link href="/signup" className="w-full sm:w-auto">
+              <Button variant="gold" size="xl" className="w-full sm:w-auto group">
+                Start Giving Now
+                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+              </Button>
+            </Link>
+            
+            <Link href="/login" className="w-full sm:w-auto">
+              <Button variant="navy-outline" size="xl" className="w-full sm:w-auto">
+                Sign In
+              </Button>
+            </Link>
           </div>
 
           {/* Stats */}
