@@ -6,7 +6,7 @@ import { User, Camera, Save, Mail, Phone, Church, Shield, AlertCircle, Check } f
 import { supabase } from '@/lib/supabase';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import AuthenticatedLayout from '@/components/layout/AuthenticatedLayout';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/label';
 
