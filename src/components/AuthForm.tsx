@@ -1,3 +1,4 @@
+//src/components/Auth
 'use client';
 
 import { User, Lock } from 'lucide-react';
