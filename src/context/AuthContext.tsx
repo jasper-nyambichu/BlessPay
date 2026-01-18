@@ -1,4 +1,4 @@
-// src/context/AuthContext.tsx (OPTIMIZED VERSION)
+// src/context/AuthContext.tsx (UPDATED WITH GOOGLE AUTH)
 'use client';
 import { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
@@ -16,6 +16,8 @@ interface AuthUser {
   created_at: string;
   updated_at?: string;
   avatar_url?: string;
+  provider?: string;
+  provider_id?: string;
 }
 
 interface AuthContextType {
@@ -30,6 +32,7 @@ interface AuthContextType {
     church: string;
     role: 'member' | 'admin' | 'pastor';
   }) => Promise<void>;
+  googleSignIn: () => Promise<void>;
   logout: () => Promise<void>;
   updateProfile: (profileData: Partial<AuthUser>) => Promise<void>;
   loading: boolean;
@@ -69,7 +72,81 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  // SIMPLIFIED Profile fetcher - removes complex fallback logic
+  // Helper function to create or update user profile
+  const createOrUpdateProfile = useCallback(async (userId: string, userData: Partial<AuthUser>, isOAuth = false) => {
+    try {
+      console.log('📝 Creating/updating profile for:', userId);
+      
+      // Check if profile exists
+      const { data: existingProfile, error: fetchError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .maybeSingle();
+
+      if (fetchError && fetchError.code !== 'PGRST116') {
+        console.error('❌ Error checking existing profile:', fetchError);
+        return null;
+      }
+
+      const profileData: any = {
+        id: userId,
+        updated_at: new Date().toISOString(),
+        ...userData
+      };
+
+      if (!existingProfile) {
+        // New profile - add created_at
+        profileData.created_at = new Date().toISOString();
+        
+        const { error: insertError } = await supabase
+          .from('profiles')
+          .insert(profileData);
+
+        if (insertError) {
+          console.error('❌ Error creating profile:', insertError);
+          
+          // Try alternative approach - update auth metadata instead
+          if (isOAuth) {
+            await supabase.auth.updateUser({
+              data: {
+                full_name: userData.full_name,
+                phone_number: userData.phone_number,
+                church_name: userData.church_name,
+                role: userData.role || 'member'
+              }
+            });
+          }
+          return null;
+        }
+        
+        console.log('✅ New profile created');
+      } else {
+        // Update existing profile
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update(profileData)
+          .eq('id', userId);
+
+        if (updateError) {
+          console.error('❌ Error updating profile:', updateError);
+          return null;
+        }
+        
+        console.log('✅ Profile updated');
+      }
+
+      // Clear cache for this user
+      profileCache.delete(userId);
+      
+      return profileData;
+    } catch (error) {
+      console.error('❌ Error in createOrUpdateProfile:', error);
+      return null;
+    }
+  }, []);
+
+  // SIMPLIFIED Profile fetcher
   const fetchUserProfile = useCallback(async (userId: string): Promise<AuthUser | null> => {
     // Check cache first
     const cached = profileCache.get(userId);
@@ -81,36 +158,52 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       console.time('🕐 ProfileFetch');
       
-      // Get auth user (fast operation)
+      // Get auth user
       const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
       if (authError || !authUser) {
         console.error('❌ Auth error:', authError);
         return null;
       }
 
-      // SIMPLIFIED: Try to fetch profile with minimal fields
+      // Try to fetch profile
       const { data, error: profileError } = await supabase
         .from('profiles')
-        .select('id, full_name, phone_number, church_name, role, created_at, updated_at, avatar_url')
+        .select('id, full_name, phone_number, church_name, role, created_at, updated_at, avatar_url, provider, provider_id')
         .eq('id', userId)
         .single();
 
-      // If profile doesn't exist, create basic user from auth data only
+      // If profile doesn't exist, create one from auth metadata
       if (profileError && profileError.code === 'PGRST116') {
-        console.log('📝 No profile found, using auth data only');
-        const basicUser: AuthUser = {
+        console.log('📝 No profile found, creating from auth metadata');
+        
+        // Extract data from auth user metadata
+        const userMetadata = authUser.user_metadata;
+        const profileData = {
+          full_name: userMetadata?.name || userMetadata?.full_name || userMetadata?.user_name || '',
+          phone_number: userMetadata?.phone || userMetadata?.phone_number || '',
+          church_name: userMetadata?.church || userMetadata?.church_name || '',
+          role: (userMetadata?.role as 'member' | 'admin' | 'pastor') || 'member',
+          avatar_url: userMetadata?.avatar_url || userMetadata?.picture || '',
+          provider: userMetadata?.provider || userMetadata?.provider_name || '',
+          provider_id: userMetadata?.provider_id || ''
+        };
+
+        // Create profile
+        await createOrUpdateProfile(userId, profileData, true);
+
+        // Build user object
+        const userProfile: AuthUser = {
           id: userId,
-          email: authUser.email || '',
-          full_name: authUser.user_metadata?.name || '',
-          phone_number: authUser.user_metadata?.phone || '',
-          church_name: authUser.user_metadata?.church || '',
-          role: authUser.user_metadata?.role || 'member',
+          email: authUser.email || userMetadata?.email || '',
+          ...profileData,
           created_at: new Date().toISOString(),
         };
+
+        // Cache the profile
+        profileCache.set(userId, { profile: userProfile, timestamp: Date.now() });
         
-        // Cache the basic user
-        profileCache.set(userId, { profile: basicUser, timestamp: Date.now() });
-        return basicUser;
+        console.timeEnd('🕐 ProfileFetch');
+        return userProfile;
       }
 
       if (profileError) {
@@ -128,7 +221,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         role: data.role || 'member',
         created_at: data.created_at,
         updated_at: data.updated_at,
-        avatar_url: data.avatar_url
+        avatar_url: data.avatar_url,
+        provider: data.provider,
+        provider_id: data.provider_id
       };
 
       // Cache the profile
@@ -142,23 +237,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Last resort: create basic user from auth
       const { data: { user: authUser } } = await supabase.auth.getUser();
       if (authUser) {
+        const userMetadata = authUser.user_metadata;
         const basicUser: AuthUser = {
           id: userId,
-          email: authUser.email || '',
-          full_name: authUser.user_metadata?.name || '',
-          phone_number: authUser.user_metadata?.phone || '',
-          church_name: authUser.user_metadata?.church || '',
-          role: authUser.user_metadata?.role || 'member',
+          email: authUser.email || userMetadata?.email || '',
+          full_name: userMetadata?.name || userMetadata?.full_name || '',
+          phone_number: userMetadata?.phone || '',
+          church_name: userMetadata?.church || '',
+          role: (userMetadata?.role as 'member' | 'admin' | 'pastor') || 'member',
           created_at: new Date().toISOString(),
+          avatar_url: userMetadata?.avatar_url || userMetadata?.picture || '',
+          provider: userMetadata?.provider || '',
+          provider_id: userMetadata?.provider_id || ''
         };
         return basicUser;
       }
       
       return null;
     }
-  }, []);
+  }, [createOrUpdateProfile]);
 
-  // OPTIMIZED Auth Initialization - runs only once
+  // OPTIMIZED Auth Initialization
   useEffect(() => {
     // Prevent multiple initializations
     if (initializationRef.current) return;
@@ -171,7 +270,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.time('🕐 AuthInitialization');
         setLoading(true);
 
-        // Get session (fast operation)
+        // Get session
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
         if (!mountedRef.current) return;
@@ -211,7 +310,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     initializeAuth();
 
-    // OPTIMIZED Auth state change listener - debounced and simplified
+    // Auth state change listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (!mountedRef.current) return;
@@ -220,6 +319,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setTimeout(async () => {
           if (!mountedRef.current) return;
 
+          console.log('🔄 Auth state changed:', event);
           setSession(session);
           
           if (session?.user) {
@@ -249,7 +349,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               profileCache.clear();
             }
           }
-        }, 100); // Small debounce
+        }, 100);
       }
     );
 
@@ -290,12 +390,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (data.user) {
         console.log('✅ Login successful');
-        // Profile will be loaded by auth state change listener
         addNotification('success', 'Welcome Back!', 'You have been successfully logged in.');
         
         console.timeEnd('🕐 LoginProcess');
         
-        // Immediate redirect without waiting for profile
+        // Immediate redirect
         setTimeout(() => {
           router.push('/dashboard');
         }, 50);
@@ -313,6 +412,54 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       throw error;
     }
   }, [addNotification, router, clearError]);
+
+  // GOOGLE SIGN-IN FUNCTION
+  const googleSignIn = useCallback(async () => {
+    if (!mountedRef.current) return;
+
+    setLoading(true);
+    clearError();
+    
+    try {
+      console.time('🕐 GoogleSignInProcess');
+      console.log('🔐 Attempting Google sign in...');
+
+      const origin = typeof window !== 'undefined' ? window.location.origin : '';
+      
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${origin}/auth/callback`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
+        },
+      });
+
+      if (error) {
+        console.error('❌ Google OAuth error:', error);
+        throw error;
+      }
+
+      console.log('✅ Google OAuth initiated:', data);
+      
+      // The actual authentication will happen in the OAuth flow
+      // The auth state listener will handle the rest
+      
+      console.timeEnd('🕐 GoogleSignInProcess');
+      
+    } catch (error: any) {
+      const errorMessage = error.message || 'Google sign-in failed. Please try again.';
+      console.error('❌ Google sign-in error:', errorMessage);
+      if (mountedRef.current) {
+        setError(errorMessage);
+        setLoading(false);
+      }
+      addNotification('error', 'Google Sign-In Failed', errorMessage);
+      throw error;
+    }
+  }, [clearError, addNotification]);
 
   // OPTIMIZED Signup function
   const signup = useCallback(async (userData: {
@@ -357,7 +504,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw new Error('No user data received after signup');
       }
 
-      // Profile creation is now non-blocking and handled by the auth state listener
+      // Create profile entry
+      if (authData.user) {
+        await createOrUpdateProfile(authData.user.id, {
+          full_name: userData.name,
+          phone_number: userData.phone,
+          church_name: userData.church,
+          role: userData.role,
+        });
+      }
+
       if (authData.session) {
         // User is immediately logged in
         addNotification('success', 'Account Created!', 'Your account has been created successfully.');
@@ -387,7 +543,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       addNotification('error', 'Signup Failed', errorMessage);
       throw error;
     }
-  }, [addNotification, router, clearError]);
+  }, [addNotification, router, clearError, createOrUpdateProfile]);
 
   const updateProfile = async (profileData: Partial<AuthUser>) => {
     if (!user) throw new Error('No user logged in');
@@ -401,6 +557,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (profileData.phone_number !== undefined) updateData.phone_number = profileData.phone_number;
       if (profileData.church_name !== undefined) updateData.church_name = profileData.church_name;
       if (profileData.avatar_url !== undefined) updateData.avatar_url = profileData.avatar_url;
+      if (profileData.role !== undefined) updateData.role = profileData.role;
 
       const { error } = await supabase
         .from('profiles')
@@ -462,6 +619,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     session,
     login,
     signup,
+    googleSignIn, // Added Google sign-in function
     logout,
     updateProfile,
     loading,
@@ -484,4 +642,4 @@ export function useAuth() {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
-}
+} 
