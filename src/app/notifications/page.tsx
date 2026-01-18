@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { Bell, CheckCircle, AlertTriangle, Info, Check, Trash2, Filter } from 'lucide-react';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import AuthenticatedLayout from '@/components/layout/AuthenticatedLayout';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/Button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export default function NotificationsPage() {

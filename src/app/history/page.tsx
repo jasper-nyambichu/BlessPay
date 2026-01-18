@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { Calendar, Filter, Download, Search, ChevronRight, FileText, CreditCard, TrendingUp } from 'lucide-react';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import AuthenticatedLayout from '@/components/layout/AuthenticatedLayout';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 

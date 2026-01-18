@@ -1,8 +1,9 @@
+//src/components/Auth
 'use client';
 
 import { User, Lock } from 'lucide-react';
 import { motion } from 'framer-motion';
-import{Button}  from './ui/button';
+import{Button}  from './ui/Button';
 import {Input} from './ui/Input';
 import LoadingSpinner from './ui/LoadingSpinner';
 
