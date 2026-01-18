@@ -1,27 +1,28 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState, Suspense } from 'react';
+import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { motion } from 'framer-motion';
 import { CheckCircle, AlertCircle, LogIn, MailCheck } from 'lucide-react';
 
-export default function AuthCallbackPage() {
+// This component uses useSearchParams, so it needs to be wrapped in Suspense
+function AuthCallbackContent() {
   const [status, setStatus] = useState<'loading' | 'success' | 'error' | 'processing'>('loading');
   const [message, setMessage] = useState('Completing authentication...');
   const [authType, setAuthType] = useState<'oauth' | 'email' | 'unknown'>('unknown');
   const router = useRouter();
-  const searchParams = useSearchParams();
 
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
         console.log('🔄 Auth callback initiated');
         
-        // Check URL parameters for OAuth callback
-        const code = searchParams.get('code');
-        const error = searchParams.get('error');
-        const errorDescription = searchParams.get('error_description');
+        // Get the current URL and parse search params manually
+        const url = new URL(window.location.href);
+        const code = url.searchParams.get('code');
+        const error = url.searchParams.get('error');
+        const errorDescription = url.searchParams.get('error_description');
         
         if (error) {
           console.error('❌ OAuth error from provider:', error, errorDescription);
@@ -133,7 +134,7 @@ export default function AuthCallbackPage() {
     };
 
     handleAuthCallback();
-  }, [router, searchParams]);
+  }, [router]); // Removed searchParams dependency
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[hsl(240,10%,15%)] p-4">
@@ -277,3 +278,24 @@ export default function AuthCallbackPage() {
     </div>
   );
 }
+
+// Main page component with Suspense boundary
+export default function AuthCallbackPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-[hsl(240,10%,15%)]">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-gold border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <h2 className="text-xl font-serif font-semibold text-white">Loading authentication...</h2>
+          <p className="text-cream/60">Please wait</p>
+        </div>
+      </div>
+    }>
+      <AuthCallbackContent />
+    </Suspense>
+  );
+}
+
+// Add dynamic export to prevent static generation
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs'; // or 'edge' if you prefer
