@@ -29,13 +29,14 @@ const Sidebar = ({ isCollapsed, setIsCollapsed, isMobileOpen, setIsMobileOpen }:
   }, []);
 
   const menuItems = [
-    { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard, roles: ['member', 'admin', 'pastor'] },
-    { name: 'Payments', path: '/payments', icon: CreditCard, roles: ['member', 'admin', 'pastor'] },
-    { name: 'History', path: '/history', icon: History, roles: ['member', 'admin', 'pastor'] },
-    { name: 'Profile', path: '/profile', icon: User, roles: ['member', 'admin', 'pastor'] },
-    { name: 'Settings', path: '/settings', icon: Settings, roles: ['member', 'admin', 'pastor'] },
-    { name: 'Notifications', path: '/notifications', icon: Bell, roles: ['member', 'admin', 'pastor'] },
-    { name: 'Admin', path: '/admin', icon: Users, roles: ['admin', 'pastor'] },
+    { name: 'Dashboard',     path: '/dashboard',     icon: LayoutDashboard, roles: ['member', 'admin', 'treasurer'] },
+    { name: 'Payments',      path: '/payments',      icon: CreditCard,      roles: ['member'] },
+    { name: 'History',       path: '/history',       icon: History,         roles: ['member'] },
+    { name: 'Profile',       path: '/profile',       icon: User,            roles: ['member', 'admin', 'treasurer'] },
+    { name: 'Settings',      path: '/settings',      icon: Settings,        roles: ['member', 'admin', 'treasurer'] },
+    { name: 'Notifications', path: '/notifications', icon: Bell,            roles: ['member'] },
+    { name: 'Admin',         path: '/admin',         icon: Users,           roles: ['admin'] },
+    { name: 'Treasurer',     path: '/treasurer',     icon: Users,           roles: ['treasurer'] },
   ];
 
   const filteredMenuItems = menuItems.filter(item => item.roles.includes(user?.role || 'member'));
@@ -98,10 +99,12 @@ const Sidebar = ({ isCollapsed, setIsCollapsed, isMobileOpen, setIsMobileOpen }:
           {!isCollapsed && (
             <div className="mt-5 flex items-center gap-3 p-3 rounded-xl bg-white/5">
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[hsl(38,70%,50%)] to-[hsl(38,70%,60%)] flex items-center justify-center text-[hsl(220,50%,15%)] font-bold">
-                {user?.full_name?.charAt(0) || 'U'}
+                <span className="text-3xl font-bold text-[hsl(38,70%,55%)]">
+                {user ? `${user.firstName?.charAt(0) || ''}${user.lastName?.charAt(0) || ''}`.toUpperCase() : 'U'}
+              </span>
               </div>
               <div>
-                <p className="text-white font-semibold text-sm">{user?.full_name || 'User'}</p>
+                <p className="text-white font-semibold text-sm">{user ? `${user.firstName} ${user.lastName}` : 'User'}</p>
                 <p className="text-[hsl(38,70%,55%)] text-xs capitalize">{user?.role || 'member'}</p>
               </div>
             </div>

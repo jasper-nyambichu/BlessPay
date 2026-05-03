@@ -1,59 +1,83 @@
 'use client';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { TrendingUp, Users, DollarSign, Calendar, ArrowUpRight, ArrowDownRight, Heart, Target, BarChart3, Sparkles } from 'lucide-react';
+import { TrendingUp, Users, DollarSign, Calendar, ArrowUpRight, Heart, Target, BarChart3, Sparkles } from 'lucide-react';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import AuthenticatedLayout from '@/components/layout/AuthenticatedLayout';
+import api from '@/lib/api';
+
+interface DashboardSummary {
+  totalTithe: number;
+  totalOffering: number;
+  totalGiven: number;
+  transactionCount: number;
+}
+
+interface Transaction {
+  id: string;
+  type: string;
+  amount: number;
+  status: string;
+  mpesa_receipt_number: string | null;
+  created_at: string;
+}
 
 function DashboardContent() {
-  const { user } = useAuth();
-  const router = useRouter();
+  const { user }                          = useAuth();
+  const router                            = useRouter();
+  const [summary, setSummary]             = useState<DashboardSummary | null>(null);
+  const [recentTx, setRecentTx]           = useState<Transaction[]>([]);
+  const [loadingData, setLoadingData]     = useState(true);
+
+  useEffect(() => {
+    const fetchDashboard = async () => {
+      try {
+        const { data } = await api.get('/api/user/dashboard');
+        setSummary(data.summary);
+        setRecentTx(data.recentTransactions);
+      } catch (err) {
+        console.error('Failed to load dashboard:', err);
+      } finally {
+        setLoadingData(false);
+      }
+    };
+    fetchDashboard();
+  }, []);
+
+  const formatCurrency = (amount: number) =>
+    new Intl.NumberFormat('en-KE', { style: 'currency', currency: 'KES', minimumFractionDigits: 0 }).format(amount);
+
+  const formatDate = (dateString: string) =>
+    new Date(dateString).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
   const stats = [
-    { 
-      icon: DollarSign, 
-      label: "Total Contributions", 
-      value: "$1,250", 
-      change: "+12%",
-      trend: 'up',
-      description: "Lifetime giving",
+    {
+      icon: DollarSign,
+      label: 'Total Given',
+      value: summary ? formatCurrency(summary.totalGiven) : '—',
+      description: 'Lifetime giving',
     },
-    { 
-      icon: Calendar, 
-      label: "Monthly Giving", 
-      value: "$150", 
-      change: "+5%",
-      trend: 'up',
-      description: "October 2024",
+    {
+      icon: Calendar,
+      label: 'Total Tithe',
+      value: summary ? formatCurrency(summary.totalTithe) : '—',
+      description: 'All time',
     },
-    { 
-      icon: TrendingUp, 
-      label: "Growth Rate", 
-      value: "24%", 
-      change: "+8%",
-      trend: 'up',
-      description: "Year over year",
+    {
+      icon: TrendingUp,
+      label: 'Total Offering',
+      value: summary ? formatCurrency(summary.totalOffering) : '—',
+      description: 'All time',
     },
-    { 
-      icon: Users, 
-      label: "Community Impact", 
-      value: "156", 
-      change: "+3%",
-      trend: 'up',
-      description: "Active members",
-    }
+    {
+      icon: Users,
+      label: 'Transactions',
+      value: summary ? String(summary.transactionCount) : '—',
+      description: 'Completed payments',
+    },
   ];
-
-  const recentActivities = [
-    { type: 'Tithe', amount: '$50', date: '2 hours ago', status: 'completed', icon: DollarSign },
-    { type: 'Offering', amount: '$25', date: '1 day ago', status: 'completed', icon: Heart },
-    { type: 'Building Fund', amount: '$100', date: '3 days ago', status: 'completed', icon: Target },
-  ];
-
-  const handleNavigation = (path: string) => {
-    router.push(path);
-  };
 
   return (
     <motion.div
@@ -64,27 +88,14 @@ function DashboardContent() {
     >
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <motion.div
-          initial={{ y: -20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          className="mb-10"
-        >
-          <motion.h1
-            initial={{ scale: 0.9 }}
-            animate={{ scale: 1 }}
-            className="text-4xl lg:text-5xl font-serif font-bold text-[hsl(220,50%,15%)] mb-3"
-          >
-            Welcome back, {user?.full_name?.split(' ')[0] || 'Friend'}
-          </motion.h1>
-          <motion.p
-            initial={{ y: 10, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="text-lg text-[hsl(220,20%,40%)]"
-          >
+        <motion.div initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="mb-10">
+          <h1 className="text-4xl lg:text-5xl font-serif font-bold text-[hsl(220,50%,15%)] mb-3">
+            Welcome back, {user?.firstName || 'Friend'}
+          </h1>
+          <p className="text-lg text-[hsl(220,20%,40%)]">
             Your <span className="text-[hsl(38,70%,50%)] font-semibold">Generosity Journey</span> and{' '}
             <span className="text-[hsl(38,70%,50%)] font-semibold">Spiritual Growth</span> Overview
-          </motion.p>
+          </p>
         </motion.div>
 
         {/* Stats Grid */}
@@ -94,33 +105,27 @@ function DashboardContent() {
               key={stat.label}
               initial={{ y: 30, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: index * 0.1, type: "spring", stiffness: 100 }}
-              whileHover={{ y: -6, transition: { type: "spring", stiffness: 300 } }}
+              transition={{ delay: index * 0.1, type: 'spring', stiffness: 100 }}
+              whileHover={{ y: -6, transition: { type: 'spring', stiffness: 300 } }}
               className="bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-lg border border-[hsl(38,40%,85%)] hover:shadow-xl hover:border-[hsl(38,70%,50%)] transition-all duration-300"
             >
               <div className="flex items-center justify-between mb-4">
                 <div className="p-3 rounded-xl bg-gradient-to-br from-[hsl(220,50%,20%)] to-[hsl(220,50%,30%)]">
                   <stat.icon className="w-6 h-6 text-[hsl(38,70%,55%)]" />
                 </div>
-                <div className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold ${
-                  stat.trend === 'up' 
-                    ? 'bg-emerald-100 text-emerald-700' 
-                    : 'bg-rose-100 text-rose-700'
-                }`}>
-                  {stat.trend === 'up' ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
-                  {stat.change}
-                </div>
+                <ArrowUpRight className="w-4 h-4 text-emerald-500" />
               </div>
-              
               <p className="text-[hsl(220,20%,50%)] text-sm font-medium mb-1 uppercase tracking-wide">{stat.label}</p>
-              <p className="text-3xl font-serif font-bold text-[hsl(220,50%,15%)] mb-1">{stat.value}</p>
+              <p className="text-3xl font-serif font-bold text-[hsl(220,50%,15%)] mb-1">
+                {loadingData ? <span className="animate-pulse">...</span> : stat.value}
+              </p>
               <p className="text-xs text-[hsl(220,20%,60%)]">{stat.description}</p>
             </motion.div>
           ))}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Recent Activity */}
+          {/* Recent Transactions */}
           <motion.div
             initial={{ x: -30, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
@@ -130,7 +135,7 @@ function DashboardContent() {
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-serif font-bold text-[hsl(220,50%,15%)]">Recent Transactions</h2>
               <motion.button
-                onClick={() => handleNavigation('/history')}
+                onClick={() => router.push('/history')}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 className="bg-gradient-to-r from-[hsl(220,50%,20%)] to-[hsl(220,50%,30%)] text-[hsl(38,70%,55%)] py-2 px-5 rounded-xl font-semibold text-sm hover:shadow-lg transition-all duration-300"
@@ -138,39 +143,50 @@ function DashboardContent() {
                 View All
               </motion.button>
             </div>
-            
+
             <div className="space-y-4">
-              {recentActivities.map((activity, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ x: -20, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
-                  transition={{ delay: 0.5 + index * 0.1 }}
-                  className="flex items-center justify-between p-4 rounded-xl bg-[hsl(40,30%,97%)] hover:bg-[hsl(40,30%,94%)] transition-colors border border-[hsl(38,40%,90%)]"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="p-3 rounded-xl bg-gradient-to-br from-[hsl(38,70%,50%)] to-[hsl(38,70%,60%)]">
-                      <activity.icon className="w-5 h-5 text-white" />
+              {loadingData ? (
+                [...Array(3)].map((_, i) => (
+                  <div key={i} className="h-16 rounded-xl bg-[hsl(40,30%,94%)] animate-pulse" />
+                ))
+              ) : recentTx.length === 0 ? (
+                <p className="text-center text-[hsl(220,20%,50%)] py-8">No transactions yet. Make your first offering!</p>
+              ) : (
+                recentTx.map((tx, index) => (
+                  <motion.div
+                    key={tx.id}
+                    initial={{ x: -20, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    transition={{ delay: 0.5 + index * 0.1 }}
+                    className="flex items-center justify-between p-4 rounded-xl bg-[hsl(40,30%,97%)] hover:bg-[hsl(40,30%,94%)] transition-colors border border-[hsl(38,40%,90%)]"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="p-3 rounded-xl bg-gradient-to-br from-[hsl(38,70%,50%)] to-[hsl(38,70%,60%)]">
+                        {tx.type === 'tithe' ? <DollarSign className="w-5 h-5 text-white" /> : <Heart className="w-5 h-5 text-white" />}
+                      </div>
+                      <div>
+                        <p className="font-semibold text-[hsl(220,50%,15%)] capitalize">{tx.type}</p>
+                        <p className="text-sm text-[hsl(220,20%,50%)]">{formatDate(tx.created_at)}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-semibold text-[hsl(220,50%,15%)]">{activity.type}</p>
-                      <p className="text-sm text-[hsl(220,20%,50%)]">{activity.date}</p>
+                    <div className="text-right">
+                      <p className="font-serif font-bold text-lg text-[hsl(220,50%,15%)]">{formatCurrency(tx.amount)}</p>
+                      <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                        tx.status === 'success' ? 'bg-emerald-100 text-emerald-700' :
+                        tx.status === 'pending' ? 'bg-amber-100 text-amber-700' :
+                        'bg-rose-100 text-rose-700'
+                      }`}>
+                        {tx.status}
+                      </span>
                     </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-serif font-bold text-lg text-[hsl(220,50%,15%)]">{activity.amount}</p>
-                    <span className="text-xs px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 font-medium">
-                      {activity.status}
-                    </span>
-                  </div>
-                </motion.div>
-              ))}
+                  </motion.div>
+                ))
+              )}
             </div>
           </motion.div>
 
           {/* Quick Actions & Quote */}
           <div className="space-y-6">
-            {/* Quick Actions */}
             <motion.div
               initial={{ x: 30, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
@@ -180,17 +196,16 @@ function DashboardContent() {
               <h2 className="text-xl font-serif font-bold text-[hsl(220,50%,15%)] mb-5">Quick Actions</h2>
               <div className="space-y-3">
                 <motion.button
-                  onClick={() => handleNavigation('/payments')}
+                  onClick={() => router.push('/payments')}
                   whileHover={{ scale: 1.02, y: -2 }}
                   whileTap={{ scale: 0.98 }}
                   className="w-full bg-gradient-to-r from-[hsl(38,70%,50%)] to-[hsl(38,70%,55%)] text-[hsl(220,50%,15%)] py-4 px-6 rounded-xl font-bold hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-3"
                 >
-                  <DollarSign className="w-5 h-5" />
+                  <Target className="w-5 h-5" />
                   Make a Donation
                 </motion.button>
-                
                 <motion.button
-                  onClick={() => handleNavigation('/history')}
+                  onClick={() => router.push('/history')}
                   whileHover={{ scale: 1.02, y: -2 }}
                   whileTap={{ scale: 0.98 }}
                   className="w-full bg-gradient-to-r from-[hsl(220,50%,20%)] to-[hsl(220,50%,30%)] text-white py-4 px-6 rounded-xl font-bold hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-3"
@@ -198,9 +213,8 @@ function DashboardContent() {
                   <BarChart3 className="w-5 h-5" />
                   Giving History
                 </motion.button>
-                
                 <motion.button
-                  onClick={() => handleNavigation('/profile')}
+                  onClick={() => router.push('/profile')}
                   whileHover={{ scale: 1.02, y: -2 }}
                   whileTap={{ scale: 0.98 }}
                   className="w-full bg-white border-2 border-[hsl(220,50%,20%)] text-[hsl(220,50%,20%)] py-4 px-6 rounded-xl font-bold hover:bg-[hsl(220,50%,20%)] hover:text-white transition-all duration-300 flex items-center justify-center gap-3"
@@ -211,7 +225,6 @@ function DashboardContent() {
               </div>
             </motion.div>
 
-            {/* Spiritual Quote */}
             <motion.div
               initial={{ y: 30, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
@@ -228,7 +241,6 @@ function DashboardContent() {
           </div>
         </div>
 
-        {/* Footer */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -236,7 +248,8 @@ function DashboardContent() {
           className="mt-12 text-center"
         >
           <p className="text-[hsl(220,20%,50%)] text-sm">
-            Your generosity makes a difference • <span className="text-[hsl(38,70%,50%)]">Blessed to be a blessing</span>
+            Your generosity makes a difference •{' '}
+            <span className="text-[hsl(38,70%,50%)]">Blessed to be a blessing</span>
           </p>
         </motion.div>
       </div>

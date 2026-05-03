@@ -8,8 +8,8 @@
     "start": "next start"
   },
   "dependencies": {
-    "@aws-amplify/ui-react": "^6.13.0",
-    "@aws-sdk/client-cognito-identity": "^3.896.0",
+    "@aws-amplify/ui-react": "^6.15.3",
+    "@aws-sdk/client-cognito-identity": "^3.1041.0",
     "@hookform/resolvers": "^5.2.2",
     "@paystack/inline-js": "^2.22.7",
     "@radix-ui/react-dialog": "^1.1.15",
@@ -17,7 +17,7 @@
     "@radix-ui/react-tabs": "^1.1.13",
     "@supabase/supabase-js": "^2.74.0",
     "@tailwindcss/postcss": "^4.1.13",
-    "aws-amplify": "^6.15.7",
+    "aws-amplify": "^6.16.4",
     "axios": "^1.12.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

@@ -1,47 +1,74 @@
-import { PaymentResponse } from '@/config/paystack';
+// src/services/paymentService.ts
+import api from '@/lib/api';
+
+export interface InitiatePaymentPayload {
+  amount: number;
+  phone: string;
+  type: 'tithe' | 'offering';
+}
+
+export interface InitiatePaymentResponse {
+  message: string;
+  transactionId: string;
+  checkoutRequestId: string;
+}
+
+export interface TransactionStatusResponse {
+  message: string;
+  status: 'pending' | 'success' | 'failed' | 'cancelled';
+  transaction: {
+    id: string;
+    amount: number;
+    phone: string;
+    type: string;
+    status: string;
+    mpesa_receipt_number: string | null;
+    failure_reason: string | null;
+    created_at: string;
+  };
+}
 
 export class PaymentService {
-  private static baseURL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-
-  static generateReference(): string {
-    return `BLP_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  // initiate M-Pesa STK push
+  static async initiatePayment(payload: InitiatePaymentPayload): Promise<InitiatePaymentResponse> {
+    const { data } = await api.post('/api/payment/initiate', payload);
+    return data;
   }
 
-  static async verifyPayment(reference: string): Promise<PaymentResponse> {
-    try {
-      const response = await fetch(`${this.baseURL}/api/paystack/verify`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ reference }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to verify payment');
-      }
-
-      return await response.json();
-    } catch (error) {
-      throw new Error('Payment verification failed');
-    }
+  // poll transaction status
+  static async getTransactionStatus(transactionId: string): Promise<TransactionStatusResponse> {
+    const { data } = await api.get(`/api/payment/status/${transactionId}`);
+    return data;
   }
 
-  static async savePayment(paymentData: any): Promise<void> {
-    try {
-      const response = await fetch(`${this.baseURL}/api/payments`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(paymentData),
-      });
+  // poll until success/failed/cancelled or timeout (max 3 minutes)
+  static async pollUntilComplete(
+    transactionId: string,
+    onStatusUpdate?: (status: string) => void
+  ): Promise<TransactionStatusResponse> {
+    const MAX_POLLS  = 36; // 36 x 5s = 3 minutes
+    const INTERVAL   = 5000;
+    let   polls      = 0;
 
-      if (!response.ok) {
-        throw new Error('Failed to save payment');
-      }
-    } catch (error) {
-      console.error('Error saving payment:', error);
-    }
+    return new Promise((resolve, reject) => {
+      const interval = setInterval(async () => {
+        try {
+          polls++;
+          const result = await PaymentService.getTransactionStatus(transactionId);
+          onStatusUpdate?.(result.status);
+
+          if (['success', 'failed', 'cancelled'].includes(result.status)) {
+            clearInterval(interval);
+            resolve(result);
+          } else if (polls >= MAX_POLLS) {
+            clearInterval(interval);
+            reject(new Error('Payment timed out. Please check your transaction history.'));
+          }
+        } catch (err) {
+          clearInterval(interval);
+          reject(err);
+        }
+      }, INTERVAL);
+    });
   }
 }

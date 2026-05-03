@@ -22,44 +22,20 @@ export function LoginForm() {
     hasSpecialChar: false,
   });
   
-  // Restore the original form data structure with single name field
   const [formData, setFormData] = useState({
     email: '',
     password: '',
     confirmPassword: '',
-    name: '', // Changed from firstName/lastName to match initial code
+    firstName: '',
+    lastName: '',
     phone: '',
-    church: '',
-    role: 'member' as 'member' | 'admin' | 'pastor',
   });
 
-  // Restore auth context and hooks - ADD googleSignIn
   const { login, signup, googleSignIn, loading: authLoading, error: authError, clearError, isInitialized } = useAuth();
   const { addNotification } = useNotification();
   const router = useRouter();
 
   const loading = isSubmitting || authLoading;
-
-  // Restore initialization check
-  if (!isInitialized) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[hsl(240,10%,15%)]">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="text-center"
-        >
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-            className="w-16 h-16 border-4 border-gold border-t-transparent rounded-full mx-auto mb-4"
-          />
-          <h2 className="text-xl font-serif font-semibold text-white">BlessPay</h2>
-          <p className="text-cream/60">Loading...</p>
-        </motion.div>
-      </div>
-    );
-  }
 
   useEffect(() => {
     if (authError && clearError) {
@@ -112,18 +88,18 @@ export function LoginForm() {
     }
 
     if (!isLogin) {
-      if (!formData.name.trim()) { // Changed to single name field
-        setLocalError('Full name is required');
+      if (!formData.firstName.trim()) {
+        setLocalError('First name is required');
+        setIsSubmitting(false);
+        return;
+      }
+      if (!formData.lastName.trim()) {
+        setLocalError('Last name is required');
         setIsSubmitting(false);
         return;
       }
       if (!formData.phone.trim()) {
         setLocalError('Phone number is required');
-        setIsSubmitting(false);
-        return;
-      }
-      if (!formData.church.trim()) {
-        setLocalError('Church name is required');
         setIsSubmitting(false);
         return;
       }
@@ -162,23 +138,21 @@ export function LoginForm() {
         await login(formData.email, formData.password);
       } else {
         await signup({
-          email: formData.email,
-          password: formData.password,
-          name: formData.name, // Single name field
-          phone: formData.phone,
-          church: formData.church,
-          role: formData.role,
+          firstName: formData.firstName,
+          lastName:  formData.lastName,
+          email:     formData.email,
+          phone:     formData.phone,
+          password:  formData.password,
         });
-        
+
         if (!authError) {
           setFormData({
             email: '',
             password: '',
             confirmPassword: '',
-            name: '',
+            firstName: '',
+            lastName: '',
             phone: '',
-            church: '',
-            role: 'member',
           });
         }
       }
@@ -193,16 +167,8 @@ export function LoginForm() {
     }
   };
 
-  // Update Google authentication function to use AuthContext
-  const handleGoogleSignIn = async () => {
-    try {
-      // Use the googleSignIn function from AuthContext
-      await googleSignIn();
-      // No need to set loading or error here - AuthContext handles that
-    } catch (error) {
-      console.error('Google sign-in error:', error);
-      // Error is already handled in AuthContext
-    }
+  const handleGoogleSignIn = () => {
+    googleSignIn();
   };
 
   const PasswordRequirement = ({ met, text }: { met: boolean; text: string }) => (
@@ -215,6 +181,23 @@ export function LoginForm() {
   const displayError = localError || authError;
 
   return (
+    !isInitialized ? (
+      <div className="min-h-screen flex items-center justify-center bg-[hsl(240,10%,15%)]">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="text-center"
+        >
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+            className="w-16 h-16 border-4 border-gold border-t-transparent rounded-full mx-auto mb-4"
+          />
+          <h2 className="text-xl font-serif font-semibold text-white">BlessPay</h2>
+          <p className="text-cream/60">Loading...</p>
+        </motion.div>
+      </div>
+    ) : (
     <div className="min-h-screen flex flex-col lg:flex-row">
       {/* Left Section - Navy Background with Branding */}
       <div className="hidden lg:flex lg:w-1/2 bg-navy relative overflow-hidden">
@@ -364,14 +347,27 @@ export function LoginForm() {
                   exit={{ opacity: 0, height: 0 }}
                   className="space-y-4"
                 >
-                  {/* Full Name Field - Single field as in initial code */}
+                  {/* First Name */}
                   <div className="relative">
                     <User className="absolute left-4 top-1/2 transform -translate-y-1/2 text-cream/40 w-5 h-5" />
                     <input
                       type="text"
-                      placeholder="Full Name"
-                      value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      placeholder="First Name"
+                      value={formData.firstName}
+                      onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                      className="w-full pl-12 pr-4 py-4 bg-[hsl(240,10%,20%)] border border-cream/10 rounded-xl text-white placeholder:text-cream/40 focus:ring-2 focus:ring-gold/50 focus:border-gold/50 transition-all duration-200"
+                      disabled={loading}
+                    />
+                  </div>
+
+                  {/* Last Name */}
+                  <div className="relative">
+                    <User className="absolute left-4 top-1/2 transform -translate-y-1/2 text-cream/40 w-5 h-5" />
+                    <input
+                      type="text"
+                      placeholder="Last Name"
+                      value={formData.lastName}
+                      onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
                       className="w-full pl-12 pr-4 py-4 bg-[hsl(240,10%,20%)] border border-cream/10 rounded-xl text-white placeholder:text-cream/40 focus:ring-2 focus:ring-gold/50 focus:border-gold/50 transition-all duration-200"
                       disabled={loading}
                     />
@@ -389,31 +385,6 @@ export function LoginForm() {
                       disabled={loading}
                     />
                   </div>
-
-                  {/* Church */}
-                  <div className="relative">
-                    <Church className="absolute left-4 top-1/2 transform -translate-y-1/2 text-cream/40 w-5 h-5" />
-                    <input
-                      type="text"
-                      placeholder="Church Name"
-                      value={formData.church}
-                      onChange={(e) => setFormData({ ...formData, church: e.target.value })}
-                      className="w-full pl-12 pr-4 py-4 bg-[hsl(240,10%,20%)] border border-cream/10 rounded-xl text-white placeholder:text-cream/40 focus:ring-2 focus:ring-gold/50 focus:border-gold/50 transition-all duration-200"
-                      disabled={loading}
-                    />
-                  </div>
-
-                  {/* Role Select */}
-                  <select
-                    value={formData.role}
-                    onChange={(e) => setFormData({ ...formData, role: e.target.value as 'member' | 'admin' | 'pastor' })}
-                    className="w-full px-4 py-4 bg-[hsl(240,10%,20%)] border border-cream/10 rounded-xl text-white focus:ring-2 focus:ring-gold/50 focus:border-gold/50 transition-all duration-200 appearance-none cursor-pointer"
-                    disabled={loading}
-                  >
-                    <option value="member">Church Member</option>
-                    <option value="pastor">Pastor</option>
-                    <option value="admin">Administrator</option>
-                  </select>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -601,6 +572,7 @@ export function LoginForm() {
         </motion.div>
       </div>
     </div>
+    )
   );
 }
 
