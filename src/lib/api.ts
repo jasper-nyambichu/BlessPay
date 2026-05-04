@@ -3,7 +3,6 @@ import axios from 'axios';
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://blesspay-backend.onrender.com';
 
-// in-memory token store — never localStorage for security
 let accessToken: string | null = null;
 
 export const setAccessToken = (token: string | null) => {
@@ -14,11 +13,10 @@ export const getAccessToken = () => accessToken;
 
 const api = axios.create({
   baseURL: BASE_URL,
-  withCredentials: true, // sends httpOnly refresh token cookie automatically
+  withCredentials: true,
   headers: { 'Content-Type': 'application/json' },
 });
 
-// attach access token to every request
 api.interceptors.request.use((config) => {
   if (accessToken) {
     config.headers.Authorization = `Bearer ${accessToken}`;
@@ -26,12 +24,10 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// auto-refresh on 401
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const original = error.config;
-
     if (error.response?.status === 401 && !original._retry) {
       original._retry = true;
       try {
@@ -43,10 +39,9 @@ api.interceptors.response.use(
         return api(original);
       } catch {
         setAccessToken(null);
-        window.location.href = '/login';
+        // Never redirect here - ProtectedRoute handles it
       }
     }
-
     return Promise.reject(error);
   }
 );

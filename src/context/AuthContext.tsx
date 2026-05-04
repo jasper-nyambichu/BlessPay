@@ -47,6 +47,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router                            = useRouter();
   const { addNotification }               = useNotification();
   const mountedRef                        = useRef(true);
+  // ✅ FIX 1 — prevent double execution in React StrictMode
+  const initRan                           = useRef(false);
 
   const clearError = useCallback(() => setError(null), []);
 
@@ -54,16 +56,62 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => { mountedRef.current = false; };
   }, []);
 
-  // on mount — try to restore session via refresh token cookie
+  // ✅ FIX 2 — Check Google OAuth token FIRST before restoreSession
+  // This prevents both effects running simultaneously and fighting each other
   useEffect(() => {
+    if (initRan.current) return;
+    initRan.current = true;
+
     const restoreSession = async () => {
+      // Check for Google OAuth token in URL first
+      if (typeof window !== 'undefined') {
+        const params = new URLSearchParams(window.location.search);
+        const urlToken = params.get('token');
+
+        if (urlToken) {
+          // Handle Google OAuth — clean URL immediately
+          window.history.replaceState({}, '', window.location.pathname);
+          setAccessToken(urlToken);
+          setToken(urlToken);
+
+          try {
+            const { data } = await api.get('/api/user/profile');
+            const u = data.user;
+            if (mountedRef.current) {
+              setUser({
+                id:        u.id,
+                firstName: u.first_name,
+                lastName:  u.last_name,
+                email:     u.email,
+                phone:     u.phone,
+                role:      u.role,
+                status:    u.status,
+                avatarUrl: u.avatar_url,
+              });
+              router.push('/dashboard');
+            }
+          } catch {
+            setAccessToken(null);
+            setToken(null);
+          } finally {
+            if (mountedRef.current) setIsInitialized(true);
+          }
+          return; // ← stop here, don't run refresh flow
+        }
+      }
+
+      // ✅ FIX 3 — Merge both API calls into one atomic operation
+      // No more gap between refresh and profile fetch
       try {
         const { data } = await api.get('/api/auth/refresh');
-        setAccessToken(data.accessToken);
-        setToken(data.accessToken);
+        const accessToken = data.accessToken;
+        setAccessToken(accessToken);
+        setToken(accessToken);
 
         const profile = await api.get('/api/user/profile');
         const u = profile.data.user;
+
+        // ✅ Set user and initialized TOGETHER — no gap, no blink
         if (mountedRef.current) {
           setUser({
             id:        u.id,
@@ -77,50 +125,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           });
         }
       } catch {
-        // no valid session — that's fine
         setAccessToken(null);
         setToken(null);
       } finally {
         if (mountedRef.current) {
-          setLoading(false);
-          setIsInitialized(true);
+          setIsInitialized(true); // ← always fires last
         }
       }
     };
+
     restoreSession();
-  }, []);
-
-  // handle Google OAuth callback token from URL
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const params = new URLSearchParams(window.location.search);
-    const urlToken = params.get('token');
-    if (!urlToken) return;
-
-    setAccessToken(urlToken);
-    setToken(urlToken);
-
-    // clean token from URL
-    const clean = window.location.pathname;
-    window.history.replaceState({}, '', clean);
-
-    api.get('/api/user/profile').then(({ data }) => {
-      const u = data.user;
-      setUser({
-        id:        u.id,
-        firstName: u.first_name,
-        lastName:  u.last_name,
-        email:     u.email,
-        phone:     u.phone,
-        role:      u.role,
-        status:    u.status,
-        avatarUrl: u.avatar_url,
-      });
-      router.push('/dashboard');
-    }).catch(() => {
-      setAccessToken(null);
-      setToken(null);
-    });
   }, [router]);
 
   const login = useCallback(async (email: string, password: string) => {
@@ -129,14 +143,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const { data } = await api.post('/api/auth/login', { email, password });
       setAccessToken(data.accessToken);
       setToken(data.accessToken);
-      setUser({
-        id:        data.user.id,
-        firstName: data.user.firstName,
-        lastName:  data.user.lastName,
-        email:     data.user.email,
-        role:      data.user.role,
-        status:    'active',
-      });
+      if (mountedRef.current) {
+        setUser({
+          id:        data.user.id,
+          firstName: data.user.firstName,
+          lastName:  data.user.lastName,
+          email:     data.user.email,
+          role:      data.user.role,
+          status:    'active',
+        });
+      }
       addNotification('success', 'Welcome Back!', `Good to see you, ${data.user.firstName}!`);
       router.push('/dashboard');
     } catch (err: any) {
@@ -159,14 +175,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const { data } = await api.post('/api/auth/register', userData);
       setAccessToken(data.accessToken);
       setToken(data.accessToken);
-      setUser({
-        id:        data.user.id,
-        firstName: data.user.firstName,
-        lastName:  data.user.lastName,
-        email:     data.user.email,
-        role:      data.user.role,
-        status:    'active',
-      });
+      if (mountedRef.current) {
+        setUser({
+          id:        data.user.id,
+          firstName: data.user.firstName,
+          lastName:  data.user.lastName,
+          email:     data.user.email,
+          role:      data.user.role,
+          status:    'active',
+        });
+      }
       addNotification('success', 'Account Created!', 'Welcome to BlessPay!');
       router.push('/dashboard');
     } catch (err: any) {
@@ -177,7 +195,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [addNotification, router, clearError]);
 
-  // redirects browser to Express Google OAuth — no async needed
   const googleSignIn = useCallback(() => {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
     window.location.href = `${apiUrl}/api/auth/google`;
@@ -187,7 +204,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       await api.post('/api/auth/logout');
     } catch {
-      // proceed with logout even if request fails
+      // proceed even if request fails
     } finally {
       setAccessToken(null);
       setToken(null);
@@ -213,7 +230,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         lastName:  u.last_name,
         phone:     u.phone,
       } : null);
-      addNotification('success', 'Profile Updated', 'Your profile has been updated successfully.');
+      addNotification('success', 'Profile Updated', 'Your profile has been updated.');
     } catch (err: any) {
       const msg = err.response?.data?.message || 'Failed to update profile';
       addNotification('error', 'Update Failed', msg);
@@ -224,7 +241,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   return (
     <AuthContext.Provider value={{
       user,
-      accessToken: token,
+      accessToken:     token,
       login,
       signup,
       googleSignIn,
