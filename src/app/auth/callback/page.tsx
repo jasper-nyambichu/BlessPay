@@ -2,7 +2,6 @@
 
 import { useEffect, useState, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
 import { motion } from 'framer-motion';
 import { CheckCircle, AlertCircle, LogIn, MailCheck } from 'lucide-react';
 
@@ -17,21 +16,20 @@ function AuthCallbackContent() {
     const handleAuthCallback = async () => {
       try {
         console.log('🔄 Auth callback initiated');
-        
+
         // Get the current URL and parse search params manually
         const url = new URL(window.location.href);
-        const code = url.searchParams.get('code');
+        const token = url.searchParams.get('token');
         const error = url.searchParams.get('error');
         const errorDescription = url.searchParams.get('error_description');
-        
+
         if (error) {
           console.error('❌ OAuth error from provider:', error, errorDescription);
           throw new Error(errorDescription || `Authentication failed: ${error}`);
         }
 
-        // Check if this is an OAuth callback
-        if (code) {
-          console.log('🔐 Processing OAuth callback with code');
+        if (token) {
+          console.log('🔐 Processing OAuth callback with token');
           setAuthType('oauth');
           setMessage('Completing Google authentication...');
         } else {
@@ -42,77 +40,29 @@ function AuthCallbackContent() {
 
         setStatus('processing');
 
-        // Get the session from the URL fragments (handled by Supabase)
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        
-        if (sessionError) {
-          console.error('❌ Session error:', sessionError);
-          throw sessionError;
-        }
-
-        if (session?.user) {
-          // Check if this is a new OAuth user
-          const userMetadata = session.user.user_metadata;
-          const isOAuthUser = userMetadata?.provider === 'google' || 
-                              userMetadata?.avatar_url || 
-                              userMetadata?.picture;
-          
-          console.log('✅ Authentication successful:', {
-            userId: session.user.id,
-            email: session.user.email,
-            isOAuthUser,
-            provider: userMetadata?.provider
-          });
-
-          setStatus('success');
-          
-          if (isOAuthUser) {
-            setMessage('Google authentication successful! Welcome to BlessPay.');
-          } else if (authType === 'email') {
-            setMessage('Email verified successfully! Welcome to BlessPay.');
-          } else {
-            setMessage('Authentication successful! Welcome to BlessPay.');
-          }
-
-          // Store auth completion timestamp to prevent immediate logout
+        if (token) {
+          // Store the JWT token from backend OAuth redirect
+          localStorage.setItem('accessToken', token);
           localStorage.setItem('auth_completed_at', Date.now().toString());
 
-          // Wait a moment to show success message, then redirect
+          // Clean the token from the URL
+          window.history.replaceState({}, document.title, window.location.pathname);
+
+          console.log('✅ Google authentication successful');
+          setStatus('success');
+          setMessage('Google authentication successful! Welcome to BlessPay.');
+
           setTimeout(() => {
             console.log('🚀 Redirecting to dashboard...');
             router.push('/dashboard');
           }, 2000);
         } else {
-          // No session found - try to manually exchange the code for session
-          if (code) {
-            console.log('🔄 Attempting to exchange code for session...');
-            setMessage('Finalizing authentication...');
-            
-            // Wait a bit for Supabase to process the OAuth response
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            
-            const { data: { session: retrySession }, error: retryError } = await supabase.auth.getSession();
-            
-            if (retryError || !retrySession) {
-              console.error('❌ Failed to get session after retry:', retryError);
-              throw new Error('Unable to complete authentication. Please try signing in again.');
-            }
-            
-            // Session obtained successfully
-            setStatus('success');
-            setMessage('Authentication successful! Welcome to BlessPay.');
-            
-            setTimeout(() => {
-              router.push('/dashboard');
-            }, 2000);
-          } else {
-            throw new Error('Unable to complete authentication. Please try signing in again.');
-          }
+          throw new Error('Unable to complete authentication. Please try signing in again.');
         }
       } catch (error: any) {
         console.error('❌ Auth callback error:', error);
         setStatus('error');
-        
+
         // Provide user-friendly error messages
         if (error.message?.includes('already confirmed')) {
           setMessage('This email has already been verified. Please sign in.');
@@ -125,7 +75,7 @@ function AuthCallbackContent() {
         } else {
           setMessage(error.message || 'Failed to complete authentication. Please try again.');
         }
-        
+
         // Redirect to login after showing error
         setTimeout(() => {
           router.push('/login');
@@ -134,7 +84,7 @@ function AuthCallbackContent() {
     };
 
     handleAuthCallback();
-  }, [router]); // Removed searchParams dependency
+  }, [router]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[hsl(240,10%,15%)] p-4">
@@ -298,4 +248,4 @@ export default function AuthCallbackPage() {
 
 // Add dynamic export to prevent static generation
 export const dynamic = 'force-dynamic';
-export const runtime = 'nodejs'; // or 'edge' if you prefer
+export const runtime = 'nodejs';
