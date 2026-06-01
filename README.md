@@ -1,36 +1,65 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# BlessPay
 
-## Getting Started
+## Overview
 
-First, run the development server:
+BlessPay is a modern web application built with Next.js, designed to provide a secure and efficient payment processing solution. It integrates with AWS Amplify for robust backend services, authentication, and leverages Paystack for handling payments. The application emphasizes a clean user interface and a smooth payment experience.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Features
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+*   **Secure Authentication**: User authentication and authorization managed by AWS Amplify and Supabase.
+*   **Payment Gateway Integration**: Seamless integration with Paystack for processing payments.
+*   **Responsive Design**: Built with Radix UI and Tailwind CSS for a mobile-first and accessible interface.
+*   **State Management**: Utilizes React Context for managing application state, including authentication, notifications, and theme.
+*   **Form Handling**: Implements `react-hook-form` with `zod` for robust form validation.
+*   **Carousel/Sliders**: Uses Embla Carousel for dynamic content display.
+*   **Animations**: Incorporates Framer Motion for smooth UI animations.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Technology Stack
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+*   **Framework**: Next.js 15.5.4
+*   **Styling**: Tailwind CSS, Radix UI
+*   **Backend/Authentication**: AWS Amplify (v6.16.4), Supabase (v2.74.0)
+*   **Payment Gateway**: Paystack (via `@paystack/inline-js` v2.22.7)
+*   **Form Management**: `react-hook-form` with `@hookform/resolvers` (v5.2.2) and `zod` (v3.23.28)
+*   **UI Components**: Radix UI
+*   **Carousel**: Embla Carousel (v8.6.0)
+*   **Animation**: Framer Motion (v12.23.26)
+*   **HTTP Client**: Axios (v1.12.2)
+*   **Icons**: Lucide React (v0.544.0)
 
-## Learn More
+## Installation and Setup
 
-To learn more about Next.js, take a look at the following resources:
+To get started with BlessPay, follow these steps:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1.  **Clone the repository**:
+    ```bash
+    git clone https://github.com/jasper-nyambichu/blesspay.git
+    cd blesspay
+    ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+2.  **Install dependencies**:
+    ```bash
+    npm install
+    # or yarn install
+    ```
 
-## Deploy on Vercel
+3.  **Set up environment variables**:
+    Create a `.env.local` file in the root directory and add your AWS Amplify, Supabase, and Paystack credentials:
+    ```env
+    NEXT_PUBLIC_AWS_AMPLIFY_REGION=your_aws_amplify_region
+    NEXT_PUBLIC_AWS_AMPLIFY_USER_POOL_ID=your_aws_amplify_user_pool_id
+    NEXT_PUBLIC_AWS_AMPLIFY_CLIENT_ID=your_aws_amplify_client_id
+    NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+    NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+    NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY=your_paystack_public_key
+    ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+4.  **Run the development server**:
+    ```bash
+    npm run dev
+    # or yarn dev
+    ```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+    Open [http://localhost:3000](http://localhost:3000 ) with your browser to see the result.
+
+
